@@ -204,25 +204,26 @@ void CartDemoPlugin::OnUpdate()
     else if (tmp_t<30)
     	vel_target = 2.0;
     	
-    else if (tmp_t<40)
-    	vel_target = 5.0;
-    else if (tmp_t<50)
-    	vel_target = 6.0;
-    else if (tmp_t<60)
-    	vel_target = 8.0;
-    else if (tmp_t<90)
-    	vel_target = 10.0;
-    else if (tmp_t<100)
-    	vel_target = 9.0;
-    else if (tmp_t<110)
-    	vel_target = 7.0;
-    else if (tmp_t<120)
-    	vel_target = 4.0;
-    else if (tmp_t<140)
+    else 
     	vel_target = 2.0;
-    else if (tmp_t<150)
-    	vel_target = 0.0;
-    else vel_target = 0.0;
+//    else if (tmp_t<50)
+//    	vel_target = 6.0;
+//    else if (tmp_t<60)
+//    	vel_target = 8.0;
+//    else if (tmp_t<90)
+//    	vel_target = 10.0;
+//    else if (tmp_t<100)
+//    	vel_target = 9.0;
+//    else if (tmp_t<110)
+//    	vel_target = 7.0;
+//    else if (tmp_t<120)
+//    	vel_target = 4.0;
+//    else if (tmp_t<140)
+//    	vel_target = 2.0;
+//    else if (tmp_t<150)
+//    	vel_target = 0.0;
+//    else vel_target = 0.0;
+    
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
     double gas_err = vel_err*this->wheelRadius/maxSpeed;
@@ -270,11 +271,23 @@ void CartDemoPlugin::OnUpdate()
         (gas < -max_cmd ? -max_cmd : gas);
     }  
     
+    if (tmp_t > 50)
+    {
+    	gas = 0;
+    	brake = 0;
+    }
+    
     
         
     // Compute the rotational velocity of the wheels
 	  double jointVel = (std::max(0.0, gas-brake) * this->maxSpeed) /
                     this->wheelRadius;
+    double MaxForce = (gas + brake) * this->rearPower;
+    if (tmp_t > 50)
+    {
+    	MaxForce = 0.5;
+    }
+    	
 //    }   
 //      eff = eff > max_cmd ? max_cmd :
 //        (eff < -max_cmd ? -max_cmd : eff);
@@ -352,7 +365,7 @@ void CartDemoPlugin::OnUpdate()
           << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
     
     this->joints[i]->SetVelocity(1, jointVel);
-    this->joints[i]->SetMaxForce(1, (gas + brake) * this->rearPower);
+    this->joints[i]->SetMaxForce(1, MaxForce);
 //this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
     }
   gzdbg << "\n";
