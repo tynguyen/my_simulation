@@ -1,4 +1,4 @@
-/*
+/* Version 2.0
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,18 @@ namespace gazebo
     private: double jointPositions[NUM_JOINTS];
     private: double jointVelocities[NUM_JOINTS];
     private: double jointMaxEfforts[NUM_JOINTS];
+    
+    private: physics::JointPtr gasJoint, brakeJoint;
+    private: double aeroLoad;
+    private: double frontPower;
+    private: double tireAngleRange;
+    private: double steeringRatio;
+    private: double maxGas, maxBrake;
+    private: double swayForce;
+    private: double maxSpeed;
+    private: double rearPower;
+    private: double wheelRadius;
+	
 
     private: common::Time prevUpdateTime;
   };
