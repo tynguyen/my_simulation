@@ -1,3 +1,4 @@
+#Version 4.0
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
@@ -357,18 +358,36 @@ void CartDemoPlugin::OnUpdate()
 //      // gzdbg << "wheel pos [" << pos_curr << "] tar [" << pos_target << "]\n";
 //    }
 
-    for (int i = 1; i < NUM_JOINTS; i++)
+//    for (int i = 1; i < NUM_JOINTS; i++)
+//    {
+//    gzdbg << " wheel pos ["
+//          << this->joints[i]->GetAngle(0).Radian()
+//          << "] vel ["
+//          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
+//    
+//    this->joints[i]->SetVelocity(1, jointVel);
+//    this->joints[i]->SetMaxForce(1, MaxForce);
+////this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
+//    }
+//  gzdbg << "\n";
+    double forceLoad;
+   	if(tmp_t < 10)
+   		forceLoad = 0;
+   	else if (tmp_t < 20)
+   		forceLoad = 0.4;
+   	else forceLoad = 0;
+   		 
+   	for (int i = 1; i < NUM_JOINTS; i++)
     {
     gzdbg << " wheel pos ["
           << this->joints[i]->GetAngle(0).Radian()
           << "] vel ["
           << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
     
-    this->joints[i]->SetVelocity(1, jointVel);
-    this->joints[i]->SetMaxForce(1, MaxForce);
+    this->joints[i]->SetForce(0,forceLoad);
 //this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
     }
-  gzdbg << "\n";
+    gzdbg << "\n";
  
   ////////////////////////////////////////////////
 	/* Out put parameters to file "pidOut.csv"*/
