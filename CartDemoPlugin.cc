@@ -1,4 +1,5 @@
-#Version 4.0
+//Version 5.0
+//Add friction force and change model to nonlinear
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
@@ -370,11 +371,13 @@ void CartDemoPlugin::OnUpdate()
 ////this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
 //    }
 //  gzdbg << "\n";
+		double frictionLoad = 0; //Assume friction coefficient is Muy = 0.7 (dry road)
+		// => frictionLoad = 0.02x 25.5 x 9.8 = 5
     double forceLoad;
    	if(tmp_t < 10)
    		forceLoad = 0;
    	else if (tmp_t < 20)
-   		forceLoad = 0.4;
+   		forceLoad = 0.15;
    	else forceLoad = 0;
    		 
    	for (int i = 1; i < NUM_JOINTS; i++)
@@ -384,8 +387,8 @@ void CartDemoPlugin::OnUpdate()
           << "] vel ["
           << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
     
-    this->joints[i]->SetForce(0,forceLoad);
-//this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
+    this->joints[i]->SetForce(0,forceLoad );
+//    this->joints[i]->SetMaxForce(1, 1); // with this value, good figure
     }
     gzdbg << "\n";
  
