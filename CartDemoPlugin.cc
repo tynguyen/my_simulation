@@ -1,6 +1,4 @@
-//Version 5.0
-//Add friction force and change model to nonlinear
-/*
+/*Version 2.0 (updated)
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -206,25 +204,24 @@ void CartDemoPlugin::OnUpdate()
     else if (tmp_t<30)
     	vel_target = 2.0;
     	
-    else 
+   
+    else if (tmp_t<50)
+    	vel_target = 6.0;
+    else if (tmp_t<60)
+    	vel_target = 8.0;
+    else if (tmp_t<90)
+    	vel_target = 10.0;
+    else if (tmp_t<100)
+    	vel_target = 9.0;
+    else if (tmp_t<110)
+    	vel_target = 7.0;
+    else if (tmp_t<120)
+    	vel_target = 4.0;
+    else if (tmp_t<140)
     	vel_target = 2.0;
-//    else if (tmp_t<50)
-//    	vel_target = 6.0;
-//    else if (tmp_t<60)
-//    	vel_target = 8.0;
-//    else if (tmp_t<90)
-//    	vel_target = 10.0;
-//    else if (tmp_t<100)
-//    	vel_target = 9.0;
-//    else if (tmp_t<110)
-//    	vel_target = 7.0;
-//    else if (tmp_t<120)
-//    	vel_target = 4.0;
-//    else if (tmp_t<140)
-//    	vel_target = 2.0;
-//    else if (tmp_t<150)
-//    	vel_target = 0.0;
-//    else vel_target = 0.0;
+    else if (tmp_t<150)
+    	vel_target = 0.0;
+    else vel_target = 0.0;
     
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
@@ -273,22 +270,17 @@ void CartDemoPlugin::OnUpdate()
         (gas < -max_cmd ? -max_cmd : gas);
     }  
     
-    if (tmp_t > 50)
-    {
-    	gas = 0;
-    	brake = 0;
-    }
     
-    
+    //
         
     // Compute the rotational velocity of the wheels
 	  double jointVel = (std::max(0.0, gas-brake) * this->maxSpeed) /
                     this->wheelRadius;
     double MaxForce = (gas + brake) * this->rearPower;
-    if (tmp_t > 50)
-    {
-    	MaxForce = 0.5;
-    }
+//    if (tmp_t > 50)
+//    {
+//    	MaxForce = 0.5;
+//    }
     	
 //    }   
 //      eff = eff > max_cmd ? max_cmd :
@@ -359,47 +351,27 @@ void CartDemoPlugin::OnUpdate()
 //      // gzdbg << "wheel pos [" << pos_curr << "] tar [" << pos_target << "]\n";
 //    }
 
-//    for (int i = 1; i < NUM_JOINTS; i++)
-//    {
-//    gzdbg << " wheel pos ["
-//          << this->joints[i]->GetAngle(0).Radian()
-//          << "] vel ["
-//          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
-//    
-//    this->joints[i]->SetVelocity(1, jointVel);
-//    this->joints[i]->SetMaxForce(1, MaxForce);
-////this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
-//    }
-//  gzdbg << "\n";
-		double frictionLoad = 0; //Assume friction coefficient is Muy = 0.7 (dry road)
-		// => frictionLoad = 0.02x 25.5 x 9.8 = 5
-    double forceLoad;
-   	if(tmp_t < 10)
-   		forceLoad = 0;
-   	else if (tmp_t < 20)
-   		forceLoad = 0.15;
-   	else forceLoad = 0;
-   		 
-   	for (int i = 1; i < NUM_JOINTS; i++)
+    for (int i = 1; i < NUM_JOINTS; i++)
     {
     gzdbg << " wheel pos ["
           << this->joints[i]->GetAngle(0).Radian()
           << "] vel ["
           << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
     
-    this->joints[i]->SetForce(0,forceLoad );
-//    this->joints[i]->SetMaxForce(1, 1); // with this value, good figure
+    this->joints[i]->SetVelocity(1, jointVel);
+    this->joints[i]->SetMaxForce(1, MaxForce);
+//this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
     }
-    gzdbg << "\n";
+  gzdbg << "\n";
  
   ////////////////////////////////////////////////
 	/* Out put parameters to file "pidOut.csv"*/
-  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
-  {
+//  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
+//  {
   	ofstream myfile;
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
   	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tJointVel\t"<<jointVel
   		<<"\tGas\t"<<gas<<"\tbrake\t"<<brake<<"\tvel_target\t"<<vel_target<<"\n";
- 	}
+// 	}
 }
 
