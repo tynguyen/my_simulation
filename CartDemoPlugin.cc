@@ -1,4 +1,5 @@
-/*Version 2.0 (updated)
+//Version 6.0 
+/*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +22,7 @@
 #include "/home/tynguyen/my_plugin/CartDemoPlugin.hh"
 #include <fstream> //ofstream
 #include <math.h> //round()
+#include <stdlib.h> // abs function
 using namespace std;
 
 
@@ -78,9 +80,9 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->joints[1] = _model->GetJoint(
     _sdf->GetElement("right")->Get<std::string>());
   this->jointPIDs[1] = common::PID(
-    _sdf->GetElement("gas")->Get<math::Vector3>().x,
-    _sdf->GetElement("gas")->Get<math::Vector3>().y,
-    _sdf->GetElement("gas")->Get<math::Vector3>().z,
+    _sdf->GetElement("gas_pid")->Get<math::Vector3>().x,
+    _sdf->GetElement("gas_pid")->Get<math::Vector3>().y,
+    _sdf->GetElement("gas_pid")->Get<math::Vector3>().z,
     _sdf->GetElement("gas_ilim")->Get<math::Vector2d>().y,
     _sdf->GetElement("gas_ilim")->Get<math::Vector2d>().x);
   this->jointPositions[1] =
@@ -93,9 +95,9 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->joints[2] = _model->GetJoint(
     _sdf->GetElement("left")->Get<std::string>());
   this->jointPIDs[2] = common::PID(
-    _sdf->GetElement("brake")->Get<math::Vector3>().x,
-    _sdf->GetElement("brake")->Get<math::Vector3>().y,
-    _sdf->GetElement("brake")->Get<math::Vector3>().z,
+    _sdf->GetElement("brake_pid")->Get<math::Vector3>().x,
+    _sdf->GetElement("brake_pid")->Get<math::Vector3>().y,
+    _sdf->GetElement("brake_pid")->Get<math::Vector3>().z,
     _sdf->GetElement("brake_ilim")->Get<math::Vector2d>().y,
     _sdf->GetElement("brake_ilim")->Get<math::Vector2d>().x);
   this->jointPositions[2] =
@@ -203,84 +205,66 @@ void CartDemoPlugin::OnUpdate()
     	vel_target = 1.0;
     else if (tmp_t<30)
     	vel_target = 2.0;
-    	
-   
     else if (tmp_t<50)
-    	vel_target = 6.0;
-    else if (tmp_t<60)
-    	vel_target = 8.0;
-    else if (tmp_t<90)
-    	vel_target = 10.0;
-    else if (tmp_t<100)
-    	vel_target = 9.0;
-    else if (tmp_t<110)
-    	vel_target = 7.0;
-    else if (tmp_t<120)
     	vel_target = 4.0;
-    else if (tmp_t<140)
+    else if (tmp_t<60)
+    	vel_target = 7.0;
+    else if (tmp_t<90)
+    	vel_target = 15.0;
+    else if (tmp_t<95)
+    	vel_target = 7.0;
+    else if (tmp_t<100)
+    	vel_target = 4.0;
+    else if (tmp_t<105)
     	vel_target = 2.0;
-    else if (tmp_t<150)
+    else if (tmp_t<110)
     	vel_target = 0.0;
     else vel_target = 0.0;
     
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
-    double gas_err = vel_err*this->wheelRadius/maxSpeed;
-    double brake_err = -vel_err*this->wheelRadius/maxSpeed;
-    double max_cmd = 0.2;
+    double max_cmd = 3.0;
+    double eff;
+    
+    if(vel_curr < 0.02) 
+    	vel_curr = 0;
     
     //Why with vel_target=1, brake = gas = 0.3678? while with target 2, vehicle move with gas and brake = zero
    	//jointVel is always zeros, 
-   
-	  if(vel_err >= 0.2)
-	  {
-	    gas = 0;
-	    brake = this->jointPIDs[2].Update(brake_err, stepTime) + 0.05;
-	    brake = brake > max_cmd ? max_cmd :
-        (brake < -max_cmd ? -max_cmd : brake);
-	  }
-	  if(vel_err >= 0.02 && vel_err < 0.1)
-	  {
-	    gas = 0;
-	    brake = this->jointPIDs[2].Update(brake_err, stepTime) + 0.01;
-	    brake = brake > max_cmd ? max_cmd :
-        (brake < -max_cmd ? -max_cmd : brake);
-	  }
-	  
-	  if(vel_err >= 0 && vel_err < 0.02)
-	  {
-	    gas = 0;
-	    brake = this->jointPIDs[2].Update(brake_err, stepTime) + 0.002;
-	    brake = brake > max_cmd ? max_cmd :
-        (brake < -max_cmd ? -max_cmd : brake);
-	  }
-	  
-	  if(vel_err >= 0.1 && vel_err < 0.2)
-	  {
-	  	gas = 0;
-	    brake = this->jointPIDs[2].Update(brake_err, stepTime) + 0.02;
-	    brake = brake > max_cmd ? max_cmd :
-        (brake < -max_cmd ? -max_cmd : brake);
-	  }
-	  if (vel_err < -0.01)
-	  {
-	    brake = 0;
-	  	gas = this->jointPIDs[1].Update(gas_err, stepTime) +vel_target*this->wheelRadius/maxSpeed ;
-	  	gas = gas > max_cmd ? max_cmd :
-        (gas < -max_cmd ? -max_cmd : gas);
-    }  
+    if(vel_err <= 0.05)
+    {
+     this->brake_force = 0;	
+     this->gas_force = this->jointPIDs[1].Update(vel_err, stepTime.Double());
+      this->gas_force = this->gas_force > max_cmd ? max_cmd :
+        (this->gas_force < -max_cmd ? -max_cmd : this->gas_force);
+    }
     
+    else if (vel_err > 0.05)
+    {
+     this->gas_force = 0;
+     this->brake_force = this->jointPIDs[1].Update(vel_err, stepTime.Double());
+     this->brake_force = this->brake_force > max_cmd ? max_cmd :
+        (this->brake_force < -max_cmd ? -max_cmd : this->brake_force);
+    }
     
-    //
+    else 
+    	{
+    		this->brake_force = 0;
+    		this->gas_force = 0;
+    	}
+    
+    if(vel_target == 0)
+    {
+    	gas_force = 0;
+    	brake_force = 0;
+    }
+     //Force applied to wheels = this->gas_force - this->brake_force - airResistantForce - FrictionForce   
+     eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
+	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
         
-    // Compute the rotational velocity of the wheels
-	  double jointVel = (std::max(0.0, gas-brake) * this->maxSpeed) /
-                    this->wheelRadius;
-    double MaxForce = (gas + brake) * this->rearPower;
-//    if (tmp_t > 50)
-//    {
-//    	MaxForce = 0.5;
-//    }
+    gzdbg <<"Vel_erro"<<vel_err<<"Effort "<<this->jointPIDs[1].Update(vel_err, stepTime);   
+ 
+   
     	
 //    }   
 //      eff = eff > max_cmd ? max_cmd :
@@ -351,27 +335,41 @@ void CartDemoPlugin::OnUpdate()
 //      // gzdbg << "wheel pos [" << pos_curr << "] tar [" << pos_target << "]\n";
 //    }
 
-    for (int i = 1; i < NUM_JOINTS; i++)
+//    for (int i = 1; i < NUM_JOINTS; i++)
+//    {
+//    gzdbg << " wheel pos ["
+//          << this->joints[i]->GetAngle(0).Radian()
+//          << "] vel ["
+//          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
+//    
+//    this->joints[i]->SetVelocity(1, jointVel);
+//    this->joints[i]->SetMaxForce(1, MaxForce);
+////this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
+//    }
+//  gzdbg << "\n";
+  
+   		 
+   	for (int i = 1; i < NUM_JOINTS; i++)
     {
-    gzdbg << " wheel pos ["
-          << this->joints[i]->GetAngle(0).Radian()
-          << "] vel ["
-          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
+//    gzdbg << " wheel pos ["
+//          << this->joints[i]->GetAngle(0).Radian()
+//          << "] vel ["
+//          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
+    //Initialize concrete condition to avoid auto flow at the beggining
     
-    this->joints[i]->SetVelocity(1, jointVel);
-    this->joints[i]->SetMaxForce(1, MaxForce);
+    this->joints[i]->SetForce(0, eff );
 //this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
     }
-  gzdbg << "\n";
+    gzdbg << "\n";
  
   ////////////////////////////////////////////////
 	/* Out put parameters to file "pidOut.csv"*/
-//  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
-//  {
+  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
+  {
   	ofstream myfile;
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
-  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tJointVel\t"<<jointVel
-  		<<"\tGas\t"<<gas<<"\tbrake\t"<<brake<<"\tvel_target\t"<<vel_target<<"\n";
-// 	}
+  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tEffort\t"<<eff
+  		<<"\tvel_target\t"<<vel_target<<"\n";
+ 	}
 }
 
