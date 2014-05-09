@@ -5,6 +5,7 @@
     <model name="test_model">
     <!--Offset position for the whole car. This should be heigher than the height of the terrain.-->
     <!--After inserted into the world, the vehicle will follow the terrain despite of the terrain unstable surface.-->
+    <!--The following z should be > the max of the heights of the terrain-->
     <pose>0 0 10.2 0 0 0</pose>
     <link name="link">
       <inertial>
