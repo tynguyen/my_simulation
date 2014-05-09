@@ -1,8 +1,11 @@
-<?xml version="1.0" ?>
+<?xml version="2.0"?>
 <sdf version="1.4">
+<!--This version works well in heightmap.world-->
   <!-- 25.5kg total mass -->
     <model name="test_model">
-    <pose>0 0 0.7 0 0 0</pose>
+    <!--Offset position for the whole car. This should be heigher than the height of the terrain.-->
+    <!--After inserted into the world, the vehicle will follow the terrain despite of the terrain unstable surface.-->
+    <pose>0 0 10.2 0 0 0</pose>
     <link name="link">
       <inertial>
         <inertia>
@@ -170,6 +173,7 @@
       <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
+        <limit><lower>-7.853</lower><upper>7.853</upper></limit>
       </axis>
     </joint>
     <link name="bar_3">
@@ -285,6 +289,7 @@
       <pose>0 0 0 0 0 0</pose>
       <axis>
         <xyz>0 1 0</xyz>
+        
       </axis>
     </joint>
     <link name="wheel_2">
@@ -586,5 +591,52 @@
       </axis>
     </joint>
     <!--Plugin in here-->
+    <plugin name="cart_test_plugin" filename="libCartDemoPlugin.so">
+        <steer>bar_2_joint</steer>
+        <steer_pid>10 0.1 0.5</steer_pid>
+        <steer_ilim>-10 10</steer_ilim>
+        <steer_pos>0.0</steer_pos>
+        <!-- steer -->
+        <steer_vel>0</steer_vel>
+        <!-- not used -->
+        <steer_eff>100.0</steer_eff>
+        <!-- max pos pid effort -->
+        <right>wheel_3_joint</right>
+        <right_pid>0.1 0.0 0.001</right_pid>
+        <right_ilim>-.1 .1</right_ilim>
+        <right_pos>0</right_pos>
+        <!-- final position pid -->
+        <right_vel>0</right_vel>
+        <!-- final velocity pid -->
+        <right_eff>0.1</right_eff>
+        <!-- drive torque -->
+        <left>wheel_4_joint</left>
+        <left_pid>0.1 0.0 0.001</left_pid>
+        <left_ilim>-.1 .1</left_ilim>
+        <left_pos>0</left_pos>
+        <!-- final position pid -->
+        <left_vel>0</left_vel>
+        <!-- final velocity pid -->
+        <left_eff>0.1</left_eff>
+        <!-- drive torque -->
+        <!-- Joint which controls the gas -->
+     	  <gas>gas_joint</gas>
+     	  <gas_pid>12 2 0</gas_pid>
+        <gas_ilim>-3 3</gas_ilim>
+     	  <!-- Joint which controls the gas -->
+        <brake>brake_joint</brake>
+        <brake_pid>-10.129 -1.02 0</brake_pid>
+        <brake_ilim>-3 .3</brake_ilim>
+      	<!-- Power is multiplied by "gas" to determine force applied to wheels -->
+      	<front_power>10</front_power>
+        <rear_power>10</rear_power>
+        <!-- The angle range the front tires can turn for steering, in radians -->
+      <tire_angle_range>0.5</tire_angle_range>
+      <!-- Maximum speed for the car in meters/second -->
+      <max_speed>10</max_speed>
+      <!-- Factor for the down-force applied as the car travels faster -->
+      <!-- A larger number increases the down force -->
+      <aero_load>0.1</aero_load>
+      </plugin>
   </model>
 </sdf>
