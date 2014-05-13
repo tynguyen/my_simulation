@@ -199,31 +199,31 @@ void CartDemoPlugin::OnUpdate()
     
     
     /* Pid to velocity */
-    if (tmp_t < 10)      
+    if (tmp_t < 30)      
       vel_target = 0;
-    else if (tmp_t<20)
-    	vel_target = 1.0;
-    else if (tmp_t<30)
-    	vel_target = 2.0;
-    else if (tmp_t<50)
+    else if (tmp_t<35)
     	vel_target = 4.0;
+//    else if (tmp_t<40)
+//    	vel_target = 2.0;
+//    else if (tmp_t<50)
+//    	vel_target = 4.0;
     else if (tmp_t<60)
-    	vel_target = 7.0;
+    	vel_target = 6.0;
     else if (tmp_t<90)
-    	vel_target = 15.0;
-    else if (tmp_t<95)
-    	vel_target = 7.0;
-    else if (tmp_t<100)
-    	vel_target = 4.0;
-    else if (tmp_t<105)
-    	vel_target = 2.0;
-    else if (tmp_t<110)
-    	vel_target = 0.0;
+    	vel_target = 8.0;
+//    else if (tmp_t<95)
+//    	vel_target = 7.0;
+//    else if (tmp_t<100)
+//    	vel_target = 4.0;
+//    else if (tmp_t<105)
+//    	vel_target = 2.0;
+    else if (tmp_t<330)
+    	vel_target = 8.0;
     else vel_target = 0.0;
     
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
-    double max_cmd = 3.0;
+    double max_cmd = 20.0;
     double eff;
     
     if(vel_curr < 0.02) 
@@ -258,7 +258,7 @@ void CartDemoPlugin::OnUpdate()
     	gas_force = 0;
     	brake_force = 0;
     }
-     //Force applied to wheels = this->gas_force - this->brake_force - airResistantForce - FrictionForce   
+     //Force applied to wheels = this->gas_force - this->brake_force - airResistantForce - FrictionForce    
      eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
 	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
         
