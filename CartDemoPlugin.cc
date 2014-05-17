@@ -1,4 +1,4 @@
-//Version 6.0 
+//Version 8.0 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
@@ -223,10 +223,10 @@ void CartDemoPlugin::OnUpdate()
     
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
-    double max_cmd = 20.0;
+    double max_cmd = 300.0;
     double eff;
     
-    if(vel_curr < 0.02) 
+    if(vel_curr < 0.002) 
     	vel_curr = 0;
     
     //Why with vel_target=1, brake = gas = 0.3678? while with target 2, vehicle move with gas and brake = zero
@@ -258,10 +258,21 @@ void CartDemoPlugin::OnUpdate()
     	gas_force = 0;
     	brake_force = 0;
     }
-     //Force applied to wheels = this->gas_force - this->brake_force - airResistantForce - FrictionForce    
-     eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
-	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
-        
+     //Force applied to wheels = this->gas_force + this->brake_force + airResistantForce + FrictionForce 
+     //Slope resistance force seems to be applied automatically by gazebo, so not need to include in this   
+     //formula   
+//     eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
+//	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
+		//Apply static friction force (max = 25.5*9.8 = 249.9 N)
+		if(vel_curr == 0)
+			{
+				statFric = -eff;
+				statFric = statFric > 9.8*25.5 ? 9.8*25.5 :
+        (eff < -9.8*25.5 ? -9.8*25.5 : statFric);
+			}
+		else
+				statFric = 0.0;
+       eff = this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - vel_curr*0.002745 - vel_curr*0.01*9.8*25.5*cosa/abs(vel_curr + 0.00001) + statFric;
     gzdbg <<"Vel_erro"<<vel_err<<"Effort "<<this->jointPIDs[1].Update(vel_err, stepTime);   
  
    
@@ -369,7 +380,7 @@ void CartDemoPlugin::OnUpdate()
   	ofstream myfile;
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
   	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tEffort\t"<<eff
-  		<<"\tvel_target\t"<<vel_target<<"\n";
+  		<<"\tvel_target\t"<<vel_target<<"\n"<<"\tPosition\t"<<this->joints[1]->GetAngle(0).Radian()<<"\n";
  	}
 }
 
