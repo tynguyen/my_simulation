@@ -1,3 +1,4 @@
+<!--In this version, apply force to front two wheels also => 4 wheels driven.-->
 <?xml version="2.0" ?>
 <!-- Add heightmap, remove ground_plane, change pose of vehicle -->
 <sdf version="1.3">
@@ -112,12 +113,12 @@
     </spherical_coordinates>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>20.5561 21.7652 13.5508 -4e-06 1.5698 3.03537</pose>
+        <pose>-92.7916 116.736 15.9227 0 0.6698 -0.056627</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
     <model name='test_model'>
-      <pose>19 21 5.8 0 -0 0</pose>
+      <pose>-79 115 5.8 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <inertia>
@@ -850,6 +851,8 @@
         <brake>brake_joint</brake>
         <brake_pid>-10.129 -1.02 0</brake_pid>
         <brake_ilim>-3 .3</brake_ilim>
+        <front_right>wheel_1_joint</front_right>
+        <front_left>wheel_2_joint</front_left>
         <front_power>10</front_power>
         <rear_power>10</rear_power>
         <tire_angle_range>0.5</tire_angle_range>
@@ -859,9 +862,9 @@
       <static>0</static>
     </model>
     <state world_name='cart_demo'>
-      <sim_time>0 000000000</sim_time>
-      <real_time>0 00000000</real_time>
-      <wall_time>00000000 00000000</wall_time>
+      <sim_time>0 00000000</sim_time>
+      <real_time>0 000016726</real_time>
+      <wall_time>1400507673 649971849</wall_time>
       <model name='heightmap'>
         <pose>0 0 0 0 -0 0</pose>
         <link name='link'>
@@ -872,64 +875,64 @@
         </link>
       </model>
       <model name='test_model'>
-        <pose>19.0003 20.9982 5.7196 0 7e-06 -3.12858</pose>
+        <pose>-79.0042 114.998 5.7196 -6e-06 6e-06 -0.001012</pose>
         <link name='bar_1'>
-          <pose>18.5504 20.9923 5.2196 -3e-06 8e-06 -3.12858</pose>
-          <velocity>-0.003707 -0.000499 0.000219 -0.000512 0.008433 -0.000988</velocity>
+          <pose>-78.5542 114.997 5.2196 -1.1e-05 7e-06 -0.001009</pose>
+          <velocity>-0.024915 -0.002031 -0.002872 -0.00602 -0.003987 -0.001297</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='bar_2'>
-          <pose>18.5069 20.4917 5.21961 2e-06 7e-06 -3.12859</pose>
-          <velocity>-0.003652 -0.000774 -5.6e-05 0.000421 0.008265 0.012519</velocity>
+          <pose>-78.5037 115.497 5.2196 -4e-06 6e-06 -0.004459</pose>
+          <velocity>-0.024656 0.000123 -0.007816 -0.007415 -0.003726 0.051253</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='bar_3'>
-          <pose>18.4939 21.4916 5.21961 1e-06 8e-06 -3.12857</pose>
-          <velocity>-0.003642 0.000462 -0.000292 -8.1e-05 0.00837 -0.015432</velocity>
+          <pose>-78.5047 114.497 5.21961 -5e-06 7e-06 -0.004408</pose>
+          <velocity>-0.025388 -0.000956 -0.000575 -0.006394 -0.003893 0.00318</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='brake_pedal'>
-          <pose>18.8933 20.8968 5.6196 1.32349e-23 8e-06 -3.12858</pose>
-          <velocity>0.011832 -0.000429 -0.00202 -0.000104 0.008446 3e-06</velocity>
+          <pose>-78.8964 115.097 5.6196 -7e-06 8e-06 -0.001012</pose>
+          <velocity>0.011722 0.001639 -0.00384 -0.006775 -0.004013 -0.000475</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='gas_pedal'>
-          <pose>18.8926 21.0968 5.6196 1e-06 8e-06 -3.12858</pose>
-          <velocity>0.009472 -0.000368 -0.002076 0.000145 0.008437 4e-06</velocity>
+          <pose>-78.8976 114.897 5.6196 -5e-06 8e-06 -0.001012</pose>
+          <velocity>0.009411 0.001646 -0.002454 -0.007221 -0.004056 -0.000473</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link'>
-          <pose>19.0003 20.9982 5.7196 0 7e-06 -3.12858</pose>
-          <velocity>0.000605 -0.000109 -0.002971 1.6e-05 0.008279 7e-06</velocity>
+          <pose>-79.0042 114.998 5.7196 -6e-06 6e-06 -0.001012</pose>
+          <velocity>-0.027237 0.002422 -0.00361 -0.00687 -0.003739 -0.000363</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_1'>
-          <pose>18.5075 20.4417 5.21961 1.57078 -0.020599 -3.12858</pose>
-          <velocity>-0.00297 -5.3e-05 -6.9e-05 0.000292 -0.011005 0.01535</velocity>
+          <pose>-78.5034 115.547 5.2196 1.57077 -0.051595 -0.004455</pose>
+          <velocity>-0.027282 -0.000386 -0.008179 -0.001549 -0.153401 0.05339</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_2'>
-          <pose>18.4932 21.5416 5.21961 1.57082 -0.039112 -3.12857</pose>
-          <velocity>-0.003027 0.000411 -7.3e-05 -0.001853 -0.01148 -0.014612</velocity>
+          <pose>-78.5049 114.447 5.21961 1.57085 -0.063751 -0.004413</pose>
+          <velocity>-0.025067 -0.000736 0.000136 0.003335 -0.124337 0.004012</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_3'>
-          <pose>19.5074 20.4548 5.21961 1.5708 -0.106245 -3.12858</pose>
-          <velocity>-0.003606 -0.000125 -0.007137 6.5e-05 0.016171 -3e-06</velocity>
+          <pose>-79.5036 115.548 5.2196 1.57079 -0.219931 -0.001011</pose>
+          <velocity>-0.025009 -0.000813 -0.009491 -0.006726 0.11378 -0.000452</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_4'>
-          <pose>19.4931 21.5547 5.21961 1.5708 -0.124144 -3.12858</pose>
-          <velocity>-0.003568 -0.000105 -0.007384 -1e-06 0.017619 6e-06</velocity>
+          <pose>-79.5047 114.448 5.21961 1.57079 -0.249683 -0.001011</pose>
+          <velocity>-0.025545 -0.000861 -0.001975 -0.006656 0.087471 -0.000418</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
