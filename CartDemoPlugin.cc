@@ -1,4 +1,5 @@
-//Version 9.0 
+//Version 10.0 
+//If apply force to front two wheels also => 4 wheels driven, but not run well.
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
@@ -115,8 +116,6 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->frontPower = _sdf->Get<double>("front_power");
   this->rearPower = _sdf->Get<double>("rear_power");
   
-  
-  
   this->updateConnection = event::Events::ConnectWorldUpdateBegin(
           boost::bind(&CartDemoPlugin::OnUpdate, this));
 }
@@ -184,10 +183,11 @@ void CartDemoPlugin::OnUpdate()
 		
 		
     double effort_cmd = this->jointPIDs[i].Update(pos_err, stepTime);
+    gzdbg <<"Steer original Effort:" <<effort_cmd<<"\n";
     effort_cmd = effort_cmd > max_cmd ? max_cmd :
       (effort_cmd < -max_cmd ? -max_cmd : effort_cmd);
     this->joints[i]->SetForce(0, effort_cmd);
-//    gzdbg << "steer [" << pos_curr << "] [" << pos_target << "]"<<"steer_effort:"<<effort_cmd;
+    gzdbg << "steer [" << pos_curr << "] [" << pos_target << "]"<<"steer_effort:"<<effort_cmd;
   }
   
     
@@ -210,9 +210,9 @@ void CartDemoPlugin::OnUpdate()
     else if (tmp_t<50)
     	vel_target = 8.0;
     else if (tmp_t<60)
-    	vel_target = 8.0;
+    	vel_target = 10.0;
     else if (tmp_t<90)
-    	vel_target = 8.0;
+    	vel_target = 10.0;
     else if (tmp_t<95)
     	vel_target = 8.0;
 //    else if (tmp_t<100)
@@ -324,7 +324,8 @@ void CartDemoPlugin::OnUpdate()
     eff = this->gas_force + this->brake_force*brake_direct
     			- vel_curr*0.002745 - vel_curr*0.01*9.8*25.5*cAlpha/abs(vel_curr + 0.00001)  
     			- vel_curr*abs(vel_curr)*0.35 + statFric ;
- 			
+// 			if(tmp_t > 10)
+// 				eff = 5.0;
    	gzdbg <<"Current Position x, y , z: "<< orig_pose.pos.x<<"	"
    				<<orig_pose.pos.y<<"	"<<orig_pose.pos.z<<"	";
     	
