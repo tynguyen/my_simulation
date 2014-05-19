@@ -65,10 +65,9 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-    //Road condition
-    private: double statFric; //Static friction force
-    private: double cosa = 1.0; //cos of the steep angle of the road
-    private: double sina = 0.1; //sin of the steep angle of the road
+    
+    
+    //SubscriberPtr to 
   };
 }
 #endif
