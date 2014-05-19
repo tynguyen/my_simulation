@@ -1,4 +1,4 @@
-//Version 8.0 
+//Version 9.0 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
@@ -21,7 +21,7 @@
 #include "gazebo/transport/transport.hh"
 #include "/home/tynguyen/my_plugin/CartDemoPlugin.hh"
 #include <fstream> //ofstream
-#include <math.h> //round()
+#include <math.h> //round(), sqrt()
 #include <stdlib.h> // abs function
 using namespace std;
 
@@ -179,13 +179,15 @@ void CartDemoPlugin::OnUpdate()
     double max_cmd = this->jointMaxEfforts[i];
     double steerVel = 0;
     double pos_err = pos_curr - pos_target;
-
+    
+		
+		
+		
     double effort_cmd = this->jointPIDs[i].Update(pos_err, stepTime);
     effort_cmd = effort_cmd > max_cmd ? max_cmd :
       (effort_cmd < -max_cmd ? -max_cmd : effort_cmd);
     this->joints[i]->SetForce(0, effort_cmd);
-    gzdbg << "steer [" << pos_curr << "] [" << pos_target << "]"<<"steer_effort:"<<effort_cmd;
-//    this->joints[i]->SetVelocity(1, steerVel);
+//    gzdbg << "steer [" << pos_curr << "] [" << pos_target << "]"<<"steer_effort:"<<effort_cmd;
   }
   
     
@@ -199,35 +201,36 @@ void CartDemoPlugin::OnUpdate()
     
     
     /* Pid to velocity */
-    if (tmp_t < 30)      
+    if (tmp_t < 10)      
       vel_target = 0;
     else if (tmp_t<35)
-    	vel_target = 4.0;
+    	vel_target = 8.0;
 //    else if (tmp_t<40)
 //    	vel_target = 2.0;
-//    else if (tmp_t<50)
-//    	vel_target = 4.0;
+    else if (tmp_t<50)
+    	vel_target = 8.0;
     else if (tmp_t<60)
-    	vel_target = 6.0;
+    	vel_target = 8.0;
     else if (tmp_t<90)
     	vel_target = 8.0;
-//    else if (tmp_t<95)
-//    	vel_target = 7.0;
+    else if (tmp_t<95)
+    	vel_target = 8.0;
 //    else if (tmp_t<100)
 //    	vel_target = 4.0;
 //    else if (tmp_t<105)
 //    	vel_target = 2.0;
-    else if (tmp_t<330)
+    else if (tmp_t<120)
     	vel_target = 8.0;
+    	else if (tmp_t<200)
+    	vel_target = 4.0;
     else vel_target = 0.0;
     
     double vel_curr = this->joints[1]->GetVelocity(0);
     double vel_err = vel_curr - vel_target;
-    double max_cmd = 300.0;
+    double max_cmd = 1300.0;
     double eff;
     
-    if(vel_curr < 0.002) 
-    	vel_curr = 0;
+    
     
     //Why with vel_target=1, brake = gas = 0.3678? while with target 2, vehicle move with gas and brake = zero
    	//jointVel is always zeros, 
@@ -264,18 +267,66 @@ void CartDemoPlugin::OnUpdate()
 //     eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
 //	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
 		//Apply static friction force (max = 25.5*9.8 = 249.9 N)
+		
+		
+    
+    
+    //Current coordinates of vehicle
+    math::Pose orig_pose = this->model->GetWorldPose();
+		//X,Z coordinate:
+		double current_z = orig_pose.pos.z;
+		double current_x = orig_pose.pos.x;
+		//Calculate cAlpha:
+    double cAlpha = 1.0;
+    double sAlpha = 0.0;
+    if(current_x >-30.0 && current_z <= 5.72 )
+    {
+    	cAlpha = 1.0;
+    	sAlpha = 0;
+    }
+    	
+    else if(current_x >-30.0 && 5.72<current_z<10.7)
+    {
+    	cAlpha = 16/sqrt(16*16 + 4.804*4.804);
+    	sAlpha = sqrt(1-cAlpha*cAlpha);
+    }
+    else if(current_z >= 10.7)
+    	{
+    	cAlpha = 1.0;
+    	sAlpha = 0;
+    }
+    else if(current_x < -30.0 && 5.72<current_z<10.7)
+    {
+    	cAlpha = 26/sqrt(26*26 + 4.804*4.804);
+    	sAlpha = -sqrt(1-cAlpha*cAlpha);
+    }
+    
+    //Set minimum vel_curr to apply static force
+    if(abs(vel_curr) < 0.009) 
+    	vel_curr = 0;
+    //Define direction to which brake force resists movement.
+		double brake_direct = -1; 
+		if(vel_curr != 0 )
+			brake_direct = -vel_curr/abs(vel_curr);
+		else 
+			brake_direct = -(gas_force - sAlpha*9.8*25.5)/abs(gas_force - sAlpha*9.8*25.5 + 0.001); 
+		//when car stops, there are only gas force and slope resistance force
+		double statFric = 0;
 		if(vel_curr == 0)
 			{
-				statFric = -eff;
+				statFric = -(this->gas_force - sAlpha*9.8*25.5);   
 				statFric = statFric > 9.8*25.5 ? 9.8*25.5 :
         (eff < -9.8*25.5 ? -9.8*25.5 : statFric);
 			}
 		else
 				statFric = 0.0;
-       eff = this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - vel_curr*0.002745 - vel_curr*0.01*9.8*25.5*cosa/abs(vel_curr + 0.00001) + statFric;
-    gzdbg <<"Vel_erro"<<vel_err<<"Effort "<<this->jointPIDs[1].Update(vel_err, stepTime);   
- 
-   
+    
+    eff = this->gas_force + this->brake_force*brake_direct
+    			- vel_curr*0.002745 - vel_curr*0.01*9.8*25.5*cAlpha/abs(vel_curr + 0.00001)  
+    			- vel_curr*abs(vel_curr)*0.35 + statFric ;
+ 			
+   	gzdbg <<"Current Position x, y , z: "<< orig_pose.pos.x<<"	"
+   				<<orig_pose.pos.y<<"	"<<orig_pose.pos.z<<"	";
     	
 //    }   
 //      eff = eff > max_cmd ? max_cmd :
@@ -375,12 +426,13 @@ void CartDemoPlugin::OnUpdate()
  
   ////////////////////////////////////////////////
 	/* Out put parameters to file "pidOut.csv"*/
-  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
+	if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
   {
-  	ofstream myfile;
-  	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
-  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tEffort\t"<<eff
-  		<<"\tvel_target\t"<<vel_target<<"\n"<<"\tPosition\t"<<this->joints[1]->GetAngle(0).Radian()<<"\n";
- 	}
+  ofstream myfile;
+ 	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
+ 	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\teff\t"<<eff
+  		<<"\tGas_force\t"<<gas_force<<"\tbrake_force\t"<<brake_force<<"\tvel_target\t"
+  		<<vel_target<<"\tx\t"<<current_x<<"\tz\t"<<current_z<<"\n";
+  }
 }
 
