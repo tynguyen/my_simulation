@@ -1,4 +1,5 @@
-/* Version 2.0
+//In this version, apply force to front two wheels also => 4 wheels driven.
+/* Version 7.1
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,9 +39,10 @@ namespace gazebo
     public: CartDemoPlugin();
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
     public: virtual void Init();
-
+		public: enum pidType_t {GASFLAT = 1, GASUP = 3, GASDOWN = 5, 
+		BRAKEFLAT = 2, BRAKEUP = 4, BRAKEDOWN = 6}; //to choose PID type
     private: void OnUpdate();
-
+		public: double pidUpdate(pidType_t index, double error, common::Time stepTime );
     private: transport::NodePtr node;
 
     private: event::ConnectionPtr updateConnection;
@@ -48,7 +50,7 @@ namespace gazebo
     private: physics::ModelPtr model;
 
     private: physics::JointPtr joints[NUM_JOINTS];
-    private: common::PID jointPIDs[NUM_JOINTS];
+    private: common::PID jointPIDs[7]; //Add 4 more for different cases
     private: double jointPositions[NUM_JOINTS];
     private: double jointVelocities[NUM_JOINTS];
     private: double jointMaxEfforts[NUM_JOINTS];
@@ -65,8 +67,10 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
+    private: double y_prev; //Original y value
+    private: double x_prev;
     
-    
+     
     //SubscriberPtr to 
   };
 }
