@@ -1,4 +1,4 @@
-//Version 7.3
+//Version 7.2.2
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/transport/transport.hh"
@@ -8,7 +8,7 @@
 #include <stdlib.h> // abs function
 using namespace std;
 
-
+			
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(CartDemoPlugin)
 
@@ -30,9 +30,9 @@ CartDemoPlugin::CartDemoPlugin()
     //Max wheel angle
     this->wheelRadius = 0.2;
     this->vel_end = 6.0;
-    this->time_end = 30; //70s
+    this->time_end = 110; //70s
     this->time_orig = 10;
-    this->d = 120.0; 
+    this->d = 600.0; 
     this->x_orig = 0 ;
     this->d_sum = 0;
   }
@@ -224,7 +224,7 @@ void CartDemoPlugin::OnUpdate()
   		gzdbg	<<"\tNOW:\t"<<tmp_t
   					<<"\td\t"<<d
   					<<"\tx_orig\t"<<this->x_orig
-  					<<"Distance_by_angle"<<d_sum
+  					<<"\tDistance_by_angle\t"<<d_sum
   					<<"\tDelta x:\t"<<current_x - this->x_orig
   					<<"\tDelta Time:\t"<<this->time_end - tmp_t<<"\n"
   					<<"vel_time:\t"<<vel_time<<"\tvel_complement\t"<<vel_complement
@@ -241,9 +241,9 @@ void CartDemoPlugin::OnUpdate()
 	  else
 	  {
 	  	
-	  	ofstream myfile;
-	  	myfile.open ("trackOut.csv", ios::out| ios::trunc);  //New or replace existing file
-  		myfile << tmp_t<<"\tvel_end in real\t"<<vel_curr<<"\tDistance:\t"
+	  	ofstream track_file;
+	  	track_file.open ("trackOut.csv", ios::out| ios::trunc);  //New or replace existing file
+  		track_file << tmp_t<<"\tvel_end in real\t"<<vel_curr<<"\tDistance:\t"
   			<<this->d_sum<<"\tDistance_target:\t"<<d<<"\tTime end:\t"
   			<<tmp_t<<"\ttime_end_target\t"<<this->time_end
 	  		<<"\tvel_target\t"<<vel_target<<"\n";
@@ -342,9 +342,20 @@ void CartDemoPlugin::OnUpdate()
 	/* Out put parameters to file "pidOut.csv"*/
   if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
   {
-  	ofstream myfile;
-  	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
-  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tEffort\t"<<eff
-  		<<"\tvel_target\t"<<vel_target<<"\n";
+//  	ofstream myfile;
+//  	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
+//  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tEffort\t"<<eff
+//  		<<"\tvel_target\t"<<vel_target<<"\n";
+		ofstream myfile;
+	  	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
+  		myfile << tmp_t
+  			<<"\tvel_current\t"<<vel_curr
+  			<<"\tDistance_current:\t"<<this->d_sum
+  			<<"\tDistance_target:\t"<<this->d
+  			<<"\tTime end:\t"<<tmp_t
+  			<<"\ttime_end_target\t"<<this->time_end
+	  		<<"\tvel_target\t"<<vel_target
+	  		<<"\tvel_end\t"<<vel_end
+	  		<<"\n";
  	}
 }
