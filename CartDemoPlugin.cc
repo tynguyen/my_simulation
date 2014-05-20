@@ -1,4 +1,4 @@
-//Version 7.1 
+//Version 7.2
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/transport/transport.hh"
@@ -29,7 +29,12 @@ CartDemoPlugin::CartDemoPlugin()
  		this->rearPower = 50;
     //Max wheel angle
     this->wheelRadius = 0.2;
-    
+    this->vel_end = 5.0;
+    this->time_end = 30; //70s
+    this->time_orig = 10;
+    this->d = 60.0175; 
+    this->x_orig = -78.0175;
+    //The original pose is -78.0175 115.998 5.7196 => x_end = 72;
   }
   for (int i = 0; i < 6; i++)
   {
@@ -79,6 +84,7 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->jointPIDs[5] = common::PID(5,0.3,0);	//GASDown
   this->jointPIDs[4] = common::PID(5,0.3, 0);	//BRAKEUP
   this->jointPIDs[6] = common::PID(20,0.6, 0);	//BRAKEDOWN
+  this->jointPIDs[7] = common::PID(1,0, 0.1);	//TRACK
   this->jointPositions[1] =
     _sdf->GetElement("right_pos")->Get<double>();
   this->jointVelocities[1] =
@@ -166,10 +172,6 @@ void CartDemoPlugin::OnUpdate()
   // Compute the angle of the front wheels.
   double wheelAngle = steeringAngle / this->steeringRatio;
 
-  // double idleSpeed = 0.5;
-
-  
-  
   
   for (int i = 0; i < 1; i++)
   {
@@ -187,43 +189,6 @@ void CartDemoPlugin::OnUpdate()
   }
   
     
-/*Forward => backward => stop*/
-    double tmp_t = currTime.Double();
-    double vel_target;
-    
-    // custom test
-    
-    
-    
-    
-    /* Pid to velocity */
-    if (tmp_t < 10)      
-      vel_target = 0;
-    else if (tmp_t<15)
-    	vel_target = 4.0;
-//    else if (tmp_t<40)
-//    	vel_target = 2.0;
-//    else if (tmp_t<50)
-//    	vel_target = 4.0;
-    else if (tmp_t<60)
-    	vel_target = 6.0;
-    else if (tmp_t<90)
-    	vel_target = 8.0;
-//    else if (tmp_t<95)
-//    	vel_target = 7.0;
-//    else if (tmp_t<100)
-//    	vel_target = 4.0;
-//    else if (tmp_t<105)
-//    	vel_target = 2.0;
-    else if (tmp_t<330)
-    	vel_target = 8.0;
-    else vel_target = 0.0;
-    
-    double vel_curr = this->joints[1]->GetVelocity(0);
-    double vel_err = vel_curr - vel_target;
-    double max_cmd = 20.0;
-    double eff;
-    
     //Define pidType to calculate gas and brake forces
     math::Pose orig_pose = this->model->GetWorldPose();
     //X,Z coordinate:
@@ -231,7 +196,47 @@ void CartDemoPlugin::OnUpdate()
 		double current_x = orig_pose.pos.x;
 		double cAlpha = 1.0;
     double sAlpha = 0.0;
-		
+		double vel_curr = this->joints[1]->GetVelocity(0);
+    double tmp_t = currTime.Double();
+    double vel_target;  //vel_target = vel_end + vel_complement
+    double vel_time = 0; //vel_time = d/(t_end - t)
+    double vel_complement = 0; // = PID(vel_end - vel_time)
+    
+    
+    //Calculate v_target
+    //First, calculate vel_time
+    if (tmp_t < 10)      
+      {	
+      	vel_time = 0;
+      	vel_target = 0;
+      }
+    
+    else if((currTime.Double() - time_end) < 0 && (current_x - x_orig) < d)
+  	{
+  		vel_time = (d - current_x + x_orig)/(time_end - currTime.Double());
+  		
+  		vel_complement = CartDemoPlugin::pidUpdate(TRACK, vel_time - vel_end,stepTime);
+  		vel_target = vel_end + vel_complement;
+  		gzdbg	<<"\tNOW:\t"<<currTime.Double()<<"\tDelta distance:\t"<<d - current_x + x_orig
+  					<<"\tDelta Time:\t"<<time_end - currTime.Double()<<"\n"
+  					<<"vel_time:\t"<<vel_time<<"\tvel_complement\t"<<vel_complement
+  					<<"\tvel_target:\t"<<vel_target<<"\n";
+  	}
+	    	
+	  else 
+	  {
+	  	vel_target = 0;
+	  	ofstream myfile;
+	  	myfile.open ("trackOut.csv", ios::out| ios::trunc);  //Append to existing file
+  		myfile << tmp_t<<"\tvel_end in real\t"<< this->joints[1]->GetVelocity(0)<<"\tDistance:\t"
+  			<<current_x - x_orig<<"\tDistance_target:\t"<<d<<"\tTime end:\t"
+  			<<currTime.Double()<<"\ttime_end_target\t"<<time_end
+	  		<<"\tvel_target\t"<<vel_target<<"\n";
+	  }    
+    /*Now, compute setpoints for gas and brake pids*/
+    double vel_err = vel_curr - vel_target;
+    double max_cmd = 20.0;
+    double eff;
     if(current_x >-30.0 && current_z <= 5.72 )
     {
     	gasType = GASFLAT;
@@ -304,8 +309,8 @@ void CartDemoPlugin::OnUpdate()
      eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
 	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
         
-    gzdbg <<"Vel_erro"<<vel_err<<"	Effort "<<this->jointPIDs[1].Update(vel_err, stepTime)<<"\tX: "
-    			<<current_x<<"\tZ: "<<current_z<<"\n";   
+//    gzdbg <<"Vel_erro"<<vel_err<<"	Effort "<<this->jointPIDs[1].Update(vel_err, stepTime)<<"\tX: "
+//    			<<current_x<<"\tZ: "<<current_z<<"\n";   
  
    		 
    	for (int i = 1; i < NUM_JOINTS; i++)

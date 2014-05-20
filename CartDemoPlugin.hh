@@ -1,5 +1,5 @@
 //In this version, apply force to front two wheels also => 4 wheels driven.
-/* Version 7.1
+/* Version 7.2
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ namespace gazebo
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
     public: virtual void Init();
 		public: enum pidType_t {GASFLAT = 1, GASUP = 3, GASDOWN = 5, 
-		BRAKEFLAT = 2, BRAKEUP = 4, BRAKEDOWN = 6}; //to choose PID type
+		BRAKEFLAT = 2, BRAKEUP = 4, BRAKEDOWN = 6, TRACK = 7}; //to choose PID type
     private: void OnUpdate();
 		public: double pidUpdate(pidType_t index, double error, common::Time stepTime );
     private: transport::NodePtr node;
@@ -50,7 +50,7 @@ namespace gazebo
     private: physics::ModelPtr model;
 
     private: physics::JointPtr joints[NUM_JOINTS];
-    private: common::PID jointPIDs[7]; //Add 4 more for different cases
+    private: common::PID jointPIDs[8]; //Add 4 more for different cases and TRACK pid (to plan using PID)
     private: double jointPositions[NUM_JOINTS];
     private: double jointVelocities[NUM_JOINTS];
     private: double jointMaxEfforts[NUM_JOINTS];
@@ -70,6 +70,10 @@ namespace gazebo
     private: double y_prev; //Original y value
     private: double x_prev;
     
+    //The following variables are used for naive PID setpoint controller
+    private: double time_orig, time_end;
+    private: double vel_end;
+    private: double d, x_orig;
      
     //SubscriberPtr to 
   };
