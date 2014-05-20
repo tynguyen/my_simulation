@@ -1,5 +1,5 @@
 //In this version, apply force to front two wheels also => 4 wheels driven.
-/* Version 7.2
+/* Version 7.3
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +73,7 @@ namespace gazebo
     //The following variables are used for naive PID setpoint controller
     private: double time_orig, time_end;
     private: double vel_end;
-    private: double d, x_orig;
+    private: double d, x_orig, d_sum;
      
     //SubscriberPtr to 
   };

@@ -1,4 +1,4 @@
-//Version 7.2
+//Version 7.3
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/transport/transport.hh"
@@ -29,12 +29,12 @@ CartDemoPlugin::CartDemoPlugin()
  		this->rearPower = 50;
     //Max wheel angle
     this->wheelRadius = 0.2;
-    this->vel_end = 5.0;
+    this->vel_end = 6.0;
     this->time_end = 30; //70s
     this->time_orig = 10;
-    this->d = 60.0175; 
-    this->x_orig = -78.0175;
-    //The original pose is -78.0175 115.998 5.7196 => x_end = 72;
+    this->d = 120.0; 
+    this->x_orig = 0 ;
+    this->d_sum = 0;
   }
   for (int i = 0; i < 6; i++)
   {
@@ -84,7 +84,7 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->jointPIDs[5] = common::PID(5,0.3,0);	//GASDown
   this->jointPIDs[4] = common::PID(5,0.3, 0);	//BRAKEUP
   this->jointPIDs[6] = common::PID(20,0.6, 0);	//BRAKEDOWN
-  this->jointPIDs[7] = common::PID(1,0, 0.1);	//TRACK
+  this->jointPIDs[7] = common::PID(1.8,0, 0.1);	//TRACK
   this->jointPositions[1] =
     _sdf->GetElement("right_pos")->Get<double>();
   this->jointVelocities[1] =
@@ -198,9 +198,9 @@ void CartDemoPlugin::OnUpdate()
     double sAlpha = 0.0;
 		double vel_curr = this->joints[1]->GetVelocity(0);
     double tmp_t = currTime.Double();
-    double vel_target;  //vel_target = vel_end + vel_complement
+    double vel_target;  //vel_target = this->vel_end + vel_complement
     double vel_time = 0; //vel_time = d/(t_end - t)
-    double vel_complement = 0; // = PID(vel_end - vel_time)
+    double vel_complement = 0; // = PID(this->vel_end - vel_time)
     
     
     //Calculate v_target
@@ -209,30 +209,48 @@ void CartDemoPlugin::OnUpdate()
       {	
       	vel_time = 0;
       	vel_target = 0;
+      	this->x_orig = current_x;
       }
     
-    else if((currTime.Double() - time_end) < 0 && (current_x - x_orig) < d)
+    else if(tmp_t < this->time_end && this->d_sum < this->d)
   	{
-  		vel_time = (d - current_x + x_orig)/(time_end - currTime.Double());
+  		vel_time = (this->d - this->d_sum)/(this->time_end - tmp_t);
   		
-  		vel_complement = CartDemoPlugin::pidUpdate(TRACK, vel_time - vel_end,stepTime);
-  		vel_target = vel_end + vel_complement;
-  		gzdbg	<<"\tNOW:\t"<<currTime.Double()<<"\tDelta distance:\t"<<d - current_x + x_orig
-  					<<"\tDelta Time:\t"<<time_end - currTime.Double()<<"\n"
+  		vel_complement = CartDemoPlugin::pidUpdate(TRACK, vel_time - this->vel_end,stepTime);
+  		vel_complement = vel_complement > 10 ? 10 :
+        (this->gas_force < -10 ? -10 : vel_target);
+  		vel_target = this->vel_end - vel_complement;
+  		
+  		gzdbg	<<"\tNOW:\t"<<tmp_t
+  					<<"\td\t"<<d
+  					<<"\tx_orig\t"<<this->x_orig
+  					<<"Distance_by_angle"<<d_sum
+  					<<"\tDelta x:\t"<<current_x - this->x_orig
+  					<<"\tDelta Time:\t"<<this->time_end - tmp_t<<"\n"
   					<<"vel_time:\t"<<vel_time<<"\tvel_complement\t"<<vel_complement
-  					<<"\tvel_target:\t"<<vel_target<<"\n";
+  					<<"\tvel_target:\t"<<vel_target
+  					<<"\tvel_current\t"<<vel_curr<<"\n";
   	}
-	    	
-	  else 
+	   
+	  //Abort system if over ending
+	  else if (tmp_t > this->time_end || this->d_sum > (this->d + 0.01))
 	  {
 	  	vel_target = 0;
+	  }
+	  //If finish planning, write down result and abort system 
+	  else
+	  {
+	  	
 	  	ofstream myfile;
-	  	myfile.open ("trackOut.csv", ios::out| ios::trunc);  //Append to existing file
-  		myfile << tmp_t<<"\tvel_end in real\t"<< this->joints[1]->GetVelocity(0)<<"\tDistance:\t"
-  			<<current_x - x_orig<<"\tDistance_target:\t"<<d<<"\tTime end:\t"
-  			<<currTime.Double()<<"\ttime_end_target\t"<<time_end
+	  	myfile.open ("trackOut.csv", ios::out| ios::trunc);  //New or replace existing file
+  		myfile << tmp_t<<"\tvel_end in real\t"<<vel_curr<<"\tDistance:\t"
+  			<<this->d_sum<<"\tDistance_target:\t"<<d<<"\tTime end:\t"
+  			<<tmp_t<<"\ttime_end_target\t"<<this->time_end
 	  		<<"\tvel_target\t"<<vel_target<<"\n";
+	  	
+	  	
 	  }    
+    
     /*Now, compute setpoints for gas and brake pids*/
     double vel_err = vel_curr - vel_target;
     double max_cmd = 20.0;
@@ -308,16 +326,15 @@ void CartDemoPlugin::OnUpdate()
      //Force applied to wheels = this->gas_force - this->brake_force - airResistantForce - FrictionForce    
      eff =  this->gas_force + this->brake_force*abs(vel_curr)/abs(vel_curr + 0.0001) - 
 	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
+	      
+	  //Sum up traveled distance
+	  this->d_sum = this->joints[1]->GetAngle(0).Radian()*0.2*5;
         
-//    gzdbg <<"Vel_erro"<<vel_err<<"	Effort "<<this->jointPIDs[1].Update(vel_err, stepTime)<<"\tX: "
-//    			<<current_x<<"\tZ: "<<current_z<<"\n";   
- 
-   		 
    	for (int i = 1; i < NUM_JOINTS; i++)
     {
     
     this->joints[i]->SetForce(0, eff );
-//this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
+//this->joints[i]->SetMaxForce(1, 0.5); 
     }
     gzdbg << "\n";
  
