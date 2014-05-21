@@ -1,4 +1,4 @@
-/* Version 2.0
+/* Version 6.0
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,9 +63,11 @@ namespace gazebo
     private: double maxSpeed;
     private: double rearPower;
     private: double wheelRadius;
-	
-
+	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
+    
+    
+    //SubscriberPtr to 
   };
 }
 #endif
