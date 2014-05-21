@@ -1,4 +1,4 @@
-//Version 7.2.2
+//Version 7.2.3
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/transport/transport.hh"
@@ -29,10 +29,10 @@ CartDemoPlugin::CartDemoPlugin()
  		this->rearPower = 50;
     //Max wheel angle
     this->wheelRadius = 0.2;
-    this->vel_end = 6.0;
-    this->time_end = 110; //70s
+    this->vel_end = 9.0;
+    this->time_end = 50; //70s
     this->time_orig = 10;
-    this->d = 600.0; 
+    this->d = 500.0; 
     this->x_orig = 0 ;
     this->d_sum = 0;
   }
@@ -216,10 +216,10 @@ void CartDemoPlugin::OnUpdate()
   	{
   		vel_time = (this->d - this->d_sum)/(this->time_end - tmp_t);
   		
-  		vel_complement = CartDemoPlugin::pidUpdate(TRACK, vel_time - this->vel_end,stepTime);
+  		vel_complement = CartDemoPlugin::pidUpdate(TRACK, this->vel_end - vel_time,stepTime);
   		vel_complement = vel_complement > 10 ? 10 :
         (this->gas_force < -10 ? -10 : vel_target);
-  		vel_target = this->vel_end - vel_complement;
+  		vel_target = this->vel_end + vel_complement;
   		
   		gzdbg	<<"\tNOW:\t"<<tmp_t
   					<<"\td\t"<<d
