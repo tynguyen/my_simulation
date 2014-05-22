@@ -6,7 +6,8 @@
     <!--Offset position for the whole car. This should be heigher than the height of the terrain.-->
     <!--After inserted into the world, the vehicle will follow the terrain despite of the terrain unstable surface.-->
     <!--The following z should be > the max of the heights of the terrain-->
-    <pose>0 0 10.2 0 0 0</pose>
+    <!--0 0 1 for flat ground_plane and 0 0 5.8 for my heightmap road2-->
+    <pose>0 0 1 0 0 0</pose>
     <link name="link">
       <inertial>
         <inertia>
@@ -628,6 +629,9 @@
         <brake>brake_joint</brake>
         <brake_pid>-10.129 -1.02 0</brake_pid>
         <brake_ilim>-3 .3</brake_ilim>
+	<!--Add two more joint identities-->
+        <front_right>wheel_1_joint</front_right>
+        <front_left>wheel_2_joint</front_left>
       	<!-- Power is multiplied by "gas" to determine force applied to wheels -->
       	<front_power>10</front_power>
         <rear_power>10</rear_power>
