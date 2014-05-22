@@ -127,7 +127,8 @@
             <iyz>0</iyz>
             <izz>1</izz>
           </inertia>
-          <mass>21</mass>
+	  <!--Change from 21 to 550-->
+          <mass>600</mass>
         </inertial>
         <collision name='collision'>
           <pose>0 0 0 0 -0 0</pose>
@@ -405,7 +406,7 @@
             <iyz>0</iyz>
             <izz>0.01</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>100</mass>
         </inertial>
         <collision name='collision'>
           <geometry>
@@ -476,7 +477,7 @@
             <iyz>0</iyz>
             <izz>0.01</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>100</mass>
         </inertial>
         <collision name='collision'>
           <geometry>
@@ -547,7 +548,7 @@
             <iyz>0</iyz>
             <izz>0.01</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>100</mass>
         </inertial>
         <collision name='collision'>
           <geometry>
@@ -622,7 +623,7 @@
             <iyz>0</iyz>
             <izz>0.01</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>100</mass>
         </inertial>
         <collision name='collision'>
           <geometry>
