@@ -1,4 +1,4 @@
-/* Version 6.0
+/* Version 10.0
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,8 @@ namespace gazebo
     public: CartDemoPlugin();
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
     public: virtual void Init();
-
+    public: void pidCal(double &theta_e, double &v_e, double &u_e, double &a, double &b, double &b_g, 
+    								double &kp, double &ki); //Calculate pid parameters
     private: void OnUpdate();
 
     private: transport::NodePtr node;
@@ -65,8 +66,8 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-    
-    
+    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev;
+    private: double ITerm; // Integration part
     //SubscriberPtr to 
   };
 }
