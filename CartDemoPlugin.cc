@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 //Version 12.0
+=======
+//Version 11.0
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
 //This version replace the old car_model and change completely the way apply force to wheels. 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
@@ -56,8 +60,11 @@ CartDemoPlugin::CartDemoPlugin()
     this->ki = 0.01;
     this->ITerm = 0;
     this->theta_prev = 0;
+<<<<<<< HEAD
     this->x_orig = 0;
     this->v_prev = 0;
+=======
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
   }
 }
 
@@ -247,7 +254,11 @@ void CartDemoPlugin::OnUpdate()
     if (tmp_t < 10)      
       vel_target = 0;
     else if (tmp_t<35)
+<<<<<<< HEAD
     	vel_target = 5.0;
+=======
+    	vel_target = 8.0;
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
 //    else if (tmp_t<40)
 //    	vel_target = 2.0;
 //    else if (tmp_t<50)
@@ -263,7 +274,11 @@ void CartDemoPlugin::OnUpdate()
 //    else if (tmp_t<105)
 //    	vel_target = 2.0;
     else if (tmp_t<120)
+<<<<<<< HEAD
     	vel_target = 5.0;
+=======
+    	vel_target = 7.0;
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     else vel_target = 0.0;
     
     
@@ -275,10 +290,15 @@ void CartDemoPlugin::OnUpdate()
 		double current_z = orig_pose.pos.z;
 		double current_x = orig_pose.pos.x;
 		double current_y = orig_pose.pos.y;
+<<<<<<< HEAD
 		if(tmp_t < 10)
 			x_orig = current_x;
 	
     if(current_x >=16.5 || (current_x >= -0.5 && current_x <= 10.5) || current_x <= -7.5 )
+=======
+	
+    if(current_x >-30.0 && current_z <= 5.72 )
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     {
     	theta_e = 0;
     	v_e = 25;
@@ -286,13 +306,28 @@ void CartDemoPlugin::OnUpdate()
     	
     else if(current_x < 16.5 && 10.5< current_x)
     {
+<<<<<<< HEAD
     	v_e = 15;
     	theta_e = atan(0.5/6);//Down
+=======
+    	v_e = 30;
+    	theta_e = acos(16/sqrt(16*16 + 4.804*4.804));//Down
+    }
+    else if(current_z >= 10.7)
+    	{
+    	v_e = 25; 
+    	theta_e = 0;
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     }
     else if(current_x < -0.5 && -7.5<current_x)
     {
+<<<<<<< HEAD
     	v_e = 16;
     	theta_e = atan(0.5/7); //Up
+=======
+    	v_e = 20;
+    	theta_e = acos(26/sqrt(26*26 + 4.804*4.804)); //Up
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     }
     
     else
@@ -344,21 +379,36 @@ void CartDemoPlugin::OnUpdate()
     this->theta_prev = theta_e;
     this->jointPIDs[1].SetIGain(this->ki);
     this->jointPIDs[1].SetPGain(this->kp);
+<<<<<<< HEAD
     double uu = this->jointPIDs[1].Update(vel_err, stepTime);
 		
 		double u= uu > 1? 1: (uu < 0? 0: uu);
 		double dI = this->ki*vel_err + 0.5*(u-uu);
 		this->ki = this->ki + dI*stepTime.Double();
+=======
+//    this->a = this->a + stepTime.Double()*vel_err;
+    double uu = this->jointPIDs[1].Update(vel_err, stepTime);
+//		double uu = -this->kp*vel_err - this->ki*this->a; 
+		
+		double u= uu > 1? 1: (uu < 0? 0: uu);
+		double dI = -this->ki*vel_err + 0.5*(u-uu);
+//		this->ki = this->ki + dI*stepTime.Double();
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
 		double omega = an*vel_curr;
 		double torque = u * Tm * ( 1 - bbeta * pow((omega/wm - 1),2) );
 		double F = an * torque;
 		double sgn;
+<<<<<<< HEAD
 		if(abs(vel_curr) <= 0.01)
+=======
+		if(abs(vel_curr) <= 0.02)
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
 			sgn = 0;
 		else if (vel_curr > 0)
 			sgn = 1;
 		else
 			sgn = -1;
+<<<<<<< HEAD
 		double Fd=m*g*Cr*sgn + rho*Cd*A*vel_curr*vel_curr/2;
 		eff = (F - Fd)/12;
 		double acc = (vel_curr - v_prev)/0.001;
@@ -372,6 +422,16 @@ void CartDemoPlugin::OnUpdate()
   					<<"\tDistance_by_angle\t"<<this->joints[1]->GetAngle(0).Radian()*0.2*5
   					<<"\tDelta x:\t"<<current_x - this->x_orig
   					<<"\tvel_current\t"<<vel_curr<<"\n";
+=======
+		double Fd=m*g*Cr*sgn + sgn*rho*Cd*A*vel_curr*vel_curr/2;
+//		eff = (F - Fd)/m*5;
+		
+//		this->jointPIDs[1].SetIGain(this->ki);
+		gzdbg	<<"vel_err:"<<vel_err<<" vel_target:"<<vel_target<<" vel_curr:"<<vel_curr<<" gas_signal:"
+    			<<uu<<" Effort:"<<eff<<" F: "<<F<<" Fd:"<<Fd<<endl;
+    gzdbg <<"kp:"<<kp<<" ki:"<<this->ki<<"	dI"<<dI<<endl;
+    gzdbg <<"z: "<<current_z<<endl;
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     
 //    if(vel_curr < 0.02) 
 //    	vel_curr = 0;
@@ -410,6 +470,11 @@ void CartDemoPlugin::OnUpdate()
 //	      vel_curr*0.002745 - vel_curr*0.01*9.8*25.5/abs(vel_curr + 0.00001);
         
  
+<<<<<<< HEAD
+=======
+  
+   	eff = 6.0;
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
    	for (int i = 1; i < NUM_JOINTS; i++)
     {
 //    gzdbg << " wheel pos ["
@@ -417,6 +482,10 @@ void CartDemoPlugin::OnUpdate()
 //          << "] vel ["
 //          << this->joints[i]->GetVelocity(0)<<"] JointVel"<<jointVel<<"] maxSpeed ["<<maxSpeed<<"] wheelRadius["<<wheelRadius<<"] Gas, brake [{"<<gas<<"}{"<<brake<<"}]"<<"vel_target["<<vel_target;
     //Initialize concrete condition to avoid auto flow at the beggining
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     this->joints[i]->SetForce(0, eff );
 //this->joints[i]->SetMaxForce(1, 0.5); // with this value, good figure
     }
@@ -428,6 +497,7 @@ void CartDemoPlugin::OnUpdate()
   {
   	ofstream myfile;
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
+<<<<<<< HEAD
   	myfile << tmp_t
   				<<"\tvel\t"<< this->joints[1]->GetVelocity(0)
   				<<"\tGas_contr_sig\t"<<this->gas_force
@@ -441,6 +511,14 @@ void CartDemoPlugin::OnUpdate()
 					<<"\tAcc:\t"<<acc
 					<<"\tkp:\t"<<kp
 					<<"\tki:\t"<<k
+=======
+  	myfile << tmp_t<<"\tvel\t"<< this->joints[1]->GetVelocity(0)<<"\tGas_contr_sig\t"
+  				<<this->gas_force<<"\tEffort\t"<<eff
+  				<<"\tv_e\t"<<v_e
+					<<"\tvel_target\t"<<vel_target<<"\tx\t"<<current_x<<"\tz\t"<<current_z
+					<<"\tCurrent_y\t"<<current_y
+					<<"\tTheta_e\t"<<theta_e
+>>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
 					<<"\n";
  	}
 }
