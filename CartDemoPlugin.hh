@@ -1,5 +1,4 @@
-//In this version, apply force to front two wheels also => 4 wheels driven.
-/* Version 7.2.3
+/* Version 12.0
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,10 +38,10 @@ namespace gazebo
     public: CartDemoPlugin();
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
     public: virtual void Init();
-		public: enum pidType_t {GASFLAT = 1, GASUP = 3, GASDOWN = 5, 
-		BRAKEFLAT = 2, BRAKEUP = 4, BRAKEDOWN = 6, TRACK = 7}; //to choose PID type
+    public: void pidCal(double &theta_e, double &v_e, double &u_e, double &a, double &b, double &b_g, 
+    								double &kp, double &ki); //Calculate pid parameters
     private: void OnUpdate();
-		public: double pidUpdate(pidType_t index, double error, common::Time stepTime );
+
     private: transport::NodePtr node;
 
     private: event::ConnectionPtr updateConnection;
@@ -50,7 +49,7 @@ namespace gazebo
     private: physics::ModelPtr model;
 
     private: physics::JointPtr joints[NUM_JOINTS];
-    private: common::PID jointPIDs[8]; //Add 4 more for different cases and TRACK pid (to plan using PID)
+    private: common::PID jointPIDs[NUM_JOINTS];
     private: double jointPositions[NUM_JOINTS];
     private: double jointVelocities[NUM_JOINTS];
     private: double jointMaxEfforts[NUM_JOINTS];
@@ -67,14 +66,8 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-    private: double y_prev; //Original y value
-    private: double x_prev;
-    
-    //The following variables are used for naive PID setpoint controller
-    private: double time_orig, time_end;
-    private: double vel_end;
-    private: double d, x_orig, d_sum;
-     
+    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev;
+    private: double ITerm; // Integration part
     //SubscriberPtr to 
   };
 }
