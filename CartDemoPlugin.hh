@@ -1,4 +1,4 @@
-/* Version 12.0
+/* Version 12.0 this version is good
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
