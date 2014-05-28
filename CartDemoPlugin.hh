@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /* Version 12.0
-=======
-/* Version 11.0
->>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,11 +66,7 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-<<<<<<< HEAD
     private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev;
-=======
-    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev;
->>>>>>> 7406139098386caabc73994be8585d1a9a3fd89b
     private: double ITerm; // Integration part
     //SubscriberPtr to 
   };
