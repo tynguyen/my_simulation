@@ -1,4 +1,4 @@
-//Version 14.0 this version is good 
+//Version 14.1 Add brake
 //This version replace the old car_model and change completely the way apply force to wheels. 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
@@ -56,6 +56,7 @@ CartDemoPlugin::CartDemoPlugin()
     this->ki = 0.01;
     this->ITerm = 0;
     this->theta_prev = 0;
+    this->target_prev = 0; //Vel-target-previous
     this->x_orig = 0;
     this->v_prev = 0;
     this->i_store = 0;
@@ -208,11 +209,6 @@ void CartDemoPlugin::OnUpdate()
   common::Time currTime = this->model->GetWorld()->GetSimTime();
   common::Time stepTime = currTime - this->prevUpdateTime;
   this->prevUpdateTime = currTime;
-  
-  // Get the normalized gas and brake amount
-  double gas = this->gasJoint->GetAngle(0).Radian() / this->maxGas;
-  double brake = this->brakeJoint->GetAngle(0).Radian() / this->maxBrake;
-
 
 
   // Get the steering angle
@@ -221,10 +217,6 @@ void CartDemoPlugin::OnUpdate()
   // Compute the angle of the front wheels.
   double wheelAngle = steeringAngle / this->steeringRatio;
 
-  // double idleSpeed = 0.5;
-
-  
-  
   
   for (int i = 0; i < 1; i++)
   {
@@ -254,9 +246,9 @@ void CartDemoPlugin::OnUpdate()
 //    else if (tmp_t<50)
 //    	vel_target = 4.0;
     else if (tmp_t<50)
-    	vel_target = 3.0;
-    else if (tmp_t<90)
     	vel_target = 5.0;
+    else if (tmp_t<90)
+    	vel_target = 3.0;
 //    else if (tmp_t<95)
 //    	vel_target = 7.0;
 //    else if (tmp_t<100)
@@ -278,23 +270,24 @@ void CartDemoPlugin::OnUpdate()
 		double current_y = orig_pose.pos.y;
 		if(tmp_t < 10)
 			x_orig = current_x;
+			
 	
-    if(current_x >=16.5 || (current_x >= -0.5 && current_x <= 10.5) || current_x <= -7.5 )
+    if(current_x >=17 || (current_x >= 0 && current_x <= 12) || current_x <= -7 )
     {
     	theta_e = 0;
     	v_e = 25;
     }
-    	
-    else if(current_x < 16.5 && 10.5< current_x)
-    {
-    	v_e = 15;
-    	theta_e = atan(0.5/6);//Down
-    }
-    else if(current_x < -0.5 && -7.5<current_x)
+    else if(current_x < 0 && -7<current_x)
     {
     	v_e = 16;
     	theta_e = atan(0.5/7); //Up
     }
+    else if(current_x < 17 && 12< current_x)
+    {
+    	v_e = 15;
+    	theta_e = -atan(0.5/6);//Down
+    }
+
     
     else
      {
@@ -337,23 +330,24 @@ void CartDemoPlugin::OnUpdate()
 		double g = 9.8;                        // gravitational constant
     double an = 12;
     double u_e = 0;
+    double brake_max = 50; // (f per m) = m*(v_e)/t - mgCr - 0.5*rho*CdA*v_e^2 + mgsin(theta_e)
+    //Calculate gas control signal
     if((theta_e - this->theta_prev) != 0)
     {
     	CartDemoPlugin::pidCal(theta_e, v_e, u_e, this->a, this->b, this->b_g, this->kp, this->ki);
     }
     gzdbg <<"Start with kp:"<<kp<<" ki:"<<this->ki<<endl;
+    
     this->theta_prev = theta_e;
-    this->jointPIDs[1].SetIGain(this->ki);
-    this->jointPIDs[1].SetPGain(this->kp);
-//    double uu = this->jointPIDs[1].Update(vel_err, stepTime);
-		this->i_store = this->i_store + stepTime.Double()*vel_err;
-		double uu = -this->kp*vel_err - this->ki*this->i_store;		
-		double u= uu > 1? 1: (uu < 0? 0: uu);
-		double dI = -this->ki*vel_err + 0.5*(u-uu);
-    this->i_store = this->i_store - dI*stepTime.Double();
-		double omega = an*vel_curr;
-		double torque = u * Tm * ( 1 - bbeta * pow((omega/wm - 1),2) );
-		double F = an * torque;
+//    this->jointPIDs[1].SetIGain(this->ki);
+//    this->jointPIDs[1].SetPGain(this->kp);
+    /*PI control is emplimented right here*/
+    
+    //The following variables are for gas and brake control force
+    double uu = 0, u = 0, dI = 0, omega = 0, torque = 0, brake_uu = 0,
+    				gas_token = 0, brake_token = 0;
+		    
+		    /*Resistant forces*/
 		double sgn;
 		if(abs(vel_curr) <= 0.01)
 			sgn = 0;
@@ -361,13 +355,74 @@ void CartDemoPlugin::OnUpdate()
 			sgn = 1;
 		else
 			sgn = -1;
+			
 		double Fd=m*g*Cr*sgn + rho*Cd*A*vel_curr*vel_curr/2;
-		eff = (F - Fd)/12;
+     /*Gas control signal*/
+    uu = -this->kp*vel_err - this->ki*this->i_store;		
+		u= uu > 1? 1: (uu < 0? 0: uu);
+		//Integral part
+		this->i_store = this->i_store + stepTime.Double()*vel_err;
+		//Reduce integral part
+		dI = -this->ki*vel_err + 0.1*(u-uu);
+    this->i_store = this->i_store - dI*stepTime.Double();
+    //Gas force
+		omega = an*vel_curr;
+		torque = u * Tm * ( 1 - bbeta * pow((omega/wm - 1),2) );
+		this->gas_force = an * torque;
+ 
+     /*Brake force*/
+    this->jointPIDs[2].SetIGain(0.1);
+    this->jointPIDs[2].SetPGain(0.5);
+    brake_uu = this->jointPIDs[2].Update(-vel_err, stepTime);
+		this->brake_force = brake_uu*maxBrake - m*g*sin(theta_e);
+		this->brake_force = this->brake_force < 0.01? 0:this->brake_force;
+    
+    
+    /*Switch gas and brake control*/
+		
+    if(vel_target >= target_prev && vel_err < 0.05)
+    	this->brake_force = 0; //Use gas only
+    
+    else if(vel_target >= target_prev && vel_err > 1 && u == 0)
+    	this->gas_force = 0; //Use only break
+    
+    else if(vel_target < target_prev && vel_err > 0.05)
+    	this->gas_force = 0; //Use only break
+    
+    else if(vel_target < target_prev && vel_err < -2&& brake_uu ==0)
+    	this->brake_force = 0; //Use gas only
+    	
+    else if(vel_curr <= 0.05)
+    	this->brake_force = 0;
+    else {}
+    
+    
+//    if(vel_target >= target_prev && vel_err < 0.05)
+//    	this->brake_force = 0; //Use gas only
+//    
+//    else if(vel_target >= target_prev && vel_err > 1 && u == 0)
+//    	this->gas_force = 0; //Use only break
+//    
+//    else if(vel_target < target_prev && vel_err > 0.05)
+//    	this->gas_force = 0; //Use only break
+//    
+//    else if(vel_target < target_prev && vel_err < -2)
+//    	this->brake_force = 0; //Use gas only
+//    	
+//    else if(vel_curr <= 0.05)
+//    	this->brake_force = 0;
+//    else {}
+		target_prev = vel_target;
+
+
+		/*Torque applied to wheels*/
+		eff = (this->gas_force - this->brake_force - Fd)*0.2;  //Torque = F*r_wheel. 
 		double acc = (vel_curr - v_prev)/0.001;
 		v_prev = vel_curr;
-		this->jointPIDs[1].SetIGain(this->ki);
 		gzdbg	<<"vel_err:"<<vel_err<<" vel_target:"<<vel_target<<" vel_curr:"<<vel_curr<<" gas_signal:"
-    			<<u<<" F: "<<F<<" Fd:"<<Fd<<" Effort:"<<eff<<"\tAcc:\t"<<acc<<endl;
+    			<<u<<" gas_force: "<<this->gas_force<<" Fd:"<<Fd<<"\tBrake_signal\t"<<brake_uu
+    			<<"\tBrake_force\t"<<this->brake_force
+    			<<" Effort:"<<eff<<"\tAcc:\t"<<acc<<endl;
     gzdbg <<"kp:"<<kp<<" ki:"<<this->ki<<"	dI"<<dI<<endl;
     gzdbg <<"x:"<<current_x<<"\ty:\t"<<current_y<<"\tz:\t"<<current_z<<endl;
     gzdbg	<<"\tNOW:\t"<<tmp_t
@@ -432,14 +487,14 @@ void CartDemoPlugin::OnUpdate()
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
   	myfile << tmp_t
   				<<"\tvel\t"<< this->joints[1]->GetVelocity(0)
-  				<<"\tGas_contr_sig\t"<<this->gas_force
+  				<<"\tGas_force\t"<<this->gas_force
   				<<"\tEffort\t"<<eff
   				<<"\tv_e\t"<<v_e
 					<<"\tvel_target\t"<<vel_target
 					<<"\tx\t"<<current_x
 					<<"\tz\t"<<current_z
 					<<"\tCurrent_y\t"<<current_y
-					<<"\tTheta_e\t"<<theta_e
+					<<"\tTheta_e\t"<<abs(theta_e*180/3.14)
 					<<"\tAcc:\t"<<acc
 					<<"\tkp:\t"<<kp
 					<<"\tki:\t"<<ki
