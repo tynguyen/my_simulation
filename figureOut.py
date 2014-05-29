@@ -1,4 +1,4 @@
-#Version 4.0 well with CartDemoPlugin from 12.0 awards.
+#Version 5.0 well with CartDemoPlugin from 12.0 awards.
 import matplotlib.pyplot as plt
 import re
 tmp_t = []
@@ -26,7 +26,7 @@ with open('pidOut.csv','r+') as f:
 
 plt.figure(1)                # the first figure
 plt.subplot(2, 2, 1)				#Firt subplot in row
-plt.plot(tmp_t, vel_target,'g', tmp_t, vel_curr, 'r')
+plt.plot(tmp_t, vel_target,'y', tmp_t, vel_curr, 'r')
 plt.title('Velocity Response')   
 plt.xlabel('Time(0.1s interval)')
 plt.ylabel('Velocity(m/s)')
@@ -54,7 +54,7 @@ plt.grid(True)
 
 #x, z and velcurrent
 plt.subplot(2, 2, 4)				#Second subplot in row
-plt.plot(x, z, 'r', x, vel_curr,'g')
+plt.plot(x, z, 'r', x, vel_curr,'g',x, vel_target, 'y')
 plt.title('z and vel_curr with respect to x')   
 plt.xlabel('x)')
 plt.ylabel('z, vel_curr')
