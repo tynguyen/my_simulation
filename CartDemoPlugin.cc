@@ -1,4 +1,4 @@
-//Version 12.0 this version is good 
+//Version 14.0 this version is good 
 //This version replace the old car_model and change completely the way apply force to wheels. 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
@@ -58,6 +58,7 @@ CartDemoPlugin::CartDemoPlugin()
     this->theta_prev = 0;
     this->x_orig = 0;
     this->v_prev = 0;
+    this->i_store = 0;
   }
 }
 
@@ -247,13 +248,13 @@ void CartDemoPlugin::OnUpdate()
     if (tmp_t < 10)      
       vel_target = 0;
     else if (tmp_t<35)
-    	vel_target = 5.0;
+    	vel_target = 3.0;
 //    else if (tmp_t<40)
 //    	vel_target = 2.0;
 //    else if (tmp_t<50)
 //    	vel_target = 4.0;
     else if (tmp_t<50)
-    	vel_target = 5.0;
+    	vel_target = 3.0;
     else if (tmp_t<90)
     	vel_target = 5.0;
 //    else if (tmp_t<95)
@@ -263,7 +264,7 @@ void CartDemoPlugin::OnUpdate()
 //    else if (tmp_t<105)
 //    	vel_target = 2.0;
     else if (tmp_t<120)
-    	vel_target = 5.0;
+    	vel_target = 8.0;
     else vel_target = 0.0;
     
     
@@ -344,11 +345,12 @@ void CartDemoPlugin::OnUpdate()
     this->theta_prev = theta_e;
     this->jointPIDs[1].SetIGain(this->ki);
     this->jointPIDs[1].SetPGain(this->kp);
-    double uu = this->jointPIDs[1].Update(vel_err, stepTime);
-		
+//    double uu = this->jointPIDs[1].Update(vel_err, stepTime);
+		this->i_store = this->i_store + stepTime.Double()*vel_err;
+		double uu = -this->kp*vel_err - this->ki*this->i_store;		
 		double u= uu > 1? 1: (uu < 0? 0: uu);
-		double dI = this->ki*vel_err + 0.5*(u-uu);
-		this->ki = this->ki + dI*stepTime.Double();
+		double dI = -this->ki*vel_err + 0.5*(u-uu);
+    this->i_store = this->i_store - dI*stepTime.Double();
 		double omega = an*vel_curr;
 		double torque = u * Tm * ( 1 - bbeta * pow((omega/wm - 1),2) );
 		double F = an * torque;
@@ -440,7 +442,7 @@ void CartDemoPlugin::OnUpdate()
 					<<"\tTheta_e\t"<<theta_e
 					<<"\tAcc:\t"<<acc
 					<<"\tkp:\t"<<kp
-					<<"\tki:\t"<<k
+					<<"\tki:\t"<<ki
 					<<"\n";
  	}
 }
