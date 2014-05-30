@@ -1,4 +1,4 @@
-//Version 14.1 Add brake
+//Version 15.2 Add brake, get away steering
 //This version replace the old car_model and change completely the way apply force to wheels. 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
@@ -112,24 +112,10 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->node = transport::NodePtr(new transport::Node());
   this->node->Init(this->model->GetWorld()->GetName());
 
-  if (!_sdf->HasElement("steer"))
-    gzerr << "CartTest plugin missing <steer> element\n";
+
 
   // get all joints
-  this->joints[0] = _model->GetJoint(
-    _sdf->GetElement("steer")->Get<std::string>());
-  this->jointPIDs[0] = common::PID(
-    _sdf->GetElement("steer_pid")->Get<math::Vector3>().x,
-    _sdf->GetElement("steer_pid")->Get<math::Vector3>().y,
-    _sdf->GetElement("steer_pid")->Get<math::Vector3>().z,
-    _sdf->GetElement("steer_ilim")->Get<math::Vector2d>().y,
-    _sdf->GetElement("steer_ilim")->Get<math::Vector2d>().x);
-  this->jointPositions[0] =
-    _sdf->GetElement("steer_pos")->Get<double>();
-  this->jointVelocities[0] =
-    _sdf->GetElement("steer_vel")->Get<double>();
-  this->jointMaxEfforts[0] =
-    _sdf->GetElement("steer_eff")->Get<double>();
+ 
 
   this->joints[1] = _model->GetJoint(
     _sdf->GetElement("right")->Get<std::string>());
@@ -183,10 +169,7 @@ void CartDemoPlugin::Init()
   // physics::EntityPtr parent = boost::dynamic_pointer_cast<physics::Entity>(
   //   this->joints[0]->GetChild());
   // The total range the steering wheel can rotate
-  double steeringRange = this->joints[0]->GetHighStop(0).Radian() -
-                         this->joints[0]->GetLowStop(0).Radian();
-  // Compute the angle ratio between the steering wheel and the tires
-  this->steeringRatio = steeringRange / this->tireAngleRange;
+
   // Maximum gas is the upper limit of the gas joint
   this->maxGas = this->gasJoint->GetHighStop(0).Radian();
 
@@ -196,7 +179,7 @@ void CartDemoPlugin::Init()
   this->gasJoint->SetForce(0, -0.1);
   this->brakeJoint->SetForce(0, -0.1);
 
-  printf("SteeringRation[%f] MaxGa[%f]\n", this->steeringRatio, this->maxGas);
+
   
   //Create a file to ouput parameters
   ofstream myfile;
@@ -211,27 +194,7 @@ void CartDemoPlugin::OnUpdate()
   this->prevUpdateTime = currTime;
 
 
-  // Get the steering angle
-  double steeringAngle = this->joints[0]->GetAngle(0).Radian();
-
-  // Compute the angle of the front wheels.
-  double wheelAngle = steeringAngle / this->steeringRatio;
-
-  
-  for (int i = 0; i < 1; i++)
-  {
-    // first joint, set position
-    double pos_target = this->jointPositions[i];
-    double pos_curr = this->joints[i]->GetAngle(0).Radian();
-    double max_cmd = this->jointMaxEfforts[i];
-    double steerVel = 0;
-    double pos_err = pos_curr - pos_target;
-
-    double effort_cmd = this->jointPIDs[i].Update(pos_err, stepTime);
-    effort_cmd = effort_cmd > max_cmd ? max_cmd :
-      (effort_cmd < -max_cmd ? -max_cmd : effort_cmd);
-    this->joints[i]->SetForce(0, effort_cmd);
-  }
+ 
   
     /* Pid to velocity */
     double tmp_t = currTime.Double();
@@ -272,20 +235,20 @@ void CartDemoPlugin::OnUpdate()
 			x_orig = current_x;
 			
 	
-    if(current_x >=17 || (current_x >= 0 && current_x <= 12) || current_x <= -7 )
+    if(current_x >=17 || (current_x >= 1 && current_x <= 12) || current_x <= -7 )
     {
     	theta_e = 0;
     	v_e = 25;
     }
-    else if(current_x < 0 && -7<current_x)
+    else if(current_x < 1 && -7<current_x)
     {
     	v_e = 16;
-    	theta_e = atan(0.5/7); //Up
+    	theta_e = atan(0.6/7); //Up
     }
     else if(current_x < 17 && 12< current_x)
     {
     	v_e = 15;
-    	theta_e = -atan(0.5/6);//Down
+    	theta_e = -atan(0.6/6);//Down
     }
 
     
@@ -363,7 +326,7 @@ void CartDemoPlugin::OnUpdate()
 		//Integral part
 		this->i_store = this->i_store + stepTime.Double()*vel_err;
 		//Reduce integral part
-		dI = -this->ki*vel_err + 0.1*(u-uu);
+		dI = -this->ki*vel_err + 2*(u-uu);
     this->i_store = this->i_store - dI*stepTime.Double();
     //Gas force
 		omega = an*vel_curr;
@@ -380,22 +343,28 @@ void CartDemoPlugin::OnUpdate()
     
     /*Switch gas and brake control*/
 		
-    if(vel_target >= target_prev && vel_err < 0.05)
-    	this->brake_force = 0; //Use gas only
-    
-    else if(vel_target >= target_prev && vel_err > 1 && u == 0)
-    	this->gas_force = 0; //Use only break
-    
-    else if(vel_target < target_prev && vel_err > 0.05)
-    	this->gas_force = 0; //Use only break
-    
-    else if(vel_target < target_prev && vel_err < -2&& brake_uu ==0)
-    	this->brake_force = 0; //Use gas only
-    	
-    else if(vel_curr <= 0.05)
-    	this->brake_force = 0;
-    else {}
-    
+//    if(vel_target >= target_prev && vel_err < 0.05)
+//    	this->brake_force = 0; //Use gas only
+//    
+//    else if(vel_target >= target_prev && vel_err > 1 && u == 0)
+//    	{
+//    		this->gas_force = 0; 
+//    		this->brake_force = 0;
+//    	}
+//    else if(vel_target >= target_prev && vel_err > 3 && u == 0)
+//    	{
+//    		this->gas_force = 0; 
+//    	}
+//    else if(vel_target < target_prev && vel_err > 0.05)
+//    	this->gas_force = 0; //Use only break
+//    
+//    else if(vel_target < target_prev && vel_err < -2&& brake_uu ==0)
+//    	this->brake_force = 0; //Use gas only
+//    	
+//    else if(vel_curr <= 0.05)
+//    	this->brake_force = 0;
+//    else {}
+//    
     
 //    if(vel_target >= target_prev && vel_err < 0.05)
 //    	this->brake_force = 0; //Use gas only
@@ -412,7 +381,24 @@ void CartDemoPlugin::OnUpdate()
 //    else if(vel_curr <= 0.05)
 //    	this->brake_force = 0;
 //    else {}
-		target_prev = vel_target;
+/*Switch gas and brake control*/
+
+//    if(vel_target >= target_prev && vel_err < 0.05)
+//    	this->brake_force = 0; //Use gas only
+//    
+//    else if(vel_target >= target_prev && vel_err > 1 && u == 0)
+//    	this->gas_force = 0; //Use only break
+//    
+//    else if(vel_target < target_prev && vel_err > 0.05)
+//    	this->gas_force = 0; //Use only break
+//    
+//    else if(vel_target < target_prev && vel_err < -2&& brake_uu ==0)
+//    	this->brake_force = 0; //Use gas only
+//    	
+//    else if(vel_curr <= 0.05)
+//    	this->brake_force = 0;
+//    else {}
+//		target_prev = vel_target;
 
 
 		/*Torque applied to wheels*/
@@ -481,8 +467,8 @@ void CartDemoPlugin::OnUpdate()
  
   ////////////////////////////////////////////////
 	/* Out put parameters to file "pidOut.csv"*/
-  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
-  {
+//  if(tmp_t*10 == round(tmp_t*10) ) //sample each 0.1 second
+//  {
   	ofstream myfile;
   	myfile.open ("pidOut.csv", ios::out| ios::app);  //Append to existing file
   	myfile << tmp_t
@@ -499,6 +485,6 @@ void CartDemoPlugin::OnUpdate()
 					<<"\tkp:\t"<<kp
 					<<"\tki:\t"<<ki
 					<<"\n";
- 	}
+// 	}
 }
 
