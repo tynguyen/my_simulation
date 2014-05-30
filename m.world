@@ -1,3 +1,4 @@
+<!--Version 15.2-->
 <?xml version="2.0" ?>
 <sdf version='1.4'>
   <world name='cart_demo'>
@@ -74,9 +75,9 @@
           <geometry>
             <heightmap>
               <texture>
-                <diffuse>file://media/materials/textures/road1.jpg</diffuse>
+                <diffuse>file://media/materials/textures/road2.jpg</diffuse>
                 <normal>file://media/materials/textures/flat_normal.png</normal>
-                <size>100</size>
+                <size>20</size>
               </texture>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
               <size>65 65 0.5</size>
