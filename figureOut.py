@@ -1,4 +1,4 @@
-#Version 5.0 well with CartDemoPlugin from 12.0 awards.
+#Version 6.0 well with CartDemoPlugin from 12.0 awards.
 import matplotlib.pyplot as plt
 import re
 tmp_t = []
@@ -7,6 +7,7 @@ vel_target = []
 acc = []
 x = []
 z = []
+y = []
 theta_e = []
 kp = []
 ki = []
@@ -19,6 +20,7 @@ with open('pidOut.csv','r+') as f:
 		acc.append(float(line.split('\t')[20]))
 		x.append(float(line.split('\t')[12]))
 		z.append(float(line.split('\t')[14]))
+		y.append(float(line.split('\t')[16]))
 		theta_e.append(float(line.split('\t')[18]))
 		kp.append(float(line.split('\t')[22]))
 		ki.append(float(line.split('\t')[24]))
@@ -42,9 +44,9 @@ plt.ylabel('z -red, kp -green, ki- yellow')
 plt.axis([-32, 32, -5, 5])
 plt.grid(True)
 
-#x, z and theta_e
+#x, y, z and theta_e
 plt.subplot(2, 2, 3)				#Second subplot in row
-plt.plot(x, z, 'r', x, theta_e,'g')
+plt.plot(x, z, 'r', x, theta_e,'g', x, y, 'y')
 plt.title('z and theta_e with respect to x')   
 plt.xlabel('x)')
 plt.ylabel('z, theta_e')
