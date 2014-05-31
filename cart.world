@@ -1,3 +1,4 @@
+<!--Version 14.1 change terrain texture -->
 <?xml version="2.0" ?>
 <sdf version='1.4'>
   <world name='cart_demo'>
@@ -74,9 +75,9 @@
           <geometry>
             <heightmap>
               <texture>
-                <diffuse>file://media/materials/textures/road1.jpg</diffuse>
+                <diffuse>file://media/materials/textures/road2.jpg</diffuse>
                 <normal>file://media/materials/textures/flat_normal.png</normal>
-                <size>100</size>
+                <size>20</size>
               </texture>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
               <size>65 65 0.5</size>
@@ -174,7 +175,226 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      
+      <link name='bar_1'>
+        <pose>0.45 0 -0.5 0 -0 0</pose>
+        <inertial>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+          <mass>0.1</mass>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.06 1 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <max_vel>100</max_vel>
+              </ode>
+            </contact>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.02 1 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <joint name='bar_12_joint' type='revolute'>
+        <parent>bar_2</parent>
+        <child>bar_1</child>
+        <pose>0 0.5 0 0 -0 0</pose>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+        </axis>
+      </joint>
+      <joint name='bar_13_joint' type='revolute'>
+        <parent>bar_3</parent>
+        <child>bar_1</child>
+        <pose>0 -0.5 0 0 -0 0</pose>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+        </axis>
+      </joint>
+      <link name='bar_2'>
+        <pose>0.5 0.5 -0.5 0 -0 0</pose>
+        <inertial>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+          <mass>0.1</mass>
+        </inertial>
+        <collision name='collision'>
+          <pose>-0.025 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.08 0.05 0.05</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <max_vel>100</max_vel>
+              </ode>
+            </contact>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <pose>-0.025 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05 0.02 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <joint name='bar_2_joint' type='revolute'>
+        <parent>link</parent>
+        <child>bar_2</child>
+        <pose>0 0 0 0 -0 0</pose>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-7.853</lower>
+            <upper>7.853</upper>
+          </limit>
+        </axis>
+      </joint>
+      <link name='bar_3'>
+        <pose>0.5 -0.5 -0.5 0 -0 0</pose>
+        <inertial>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+          <mass>0.1</mass>
+        </inertial>
+        <collision name='collision'>
+          <pose>-0.025 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05 0.02 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <max_vel>100</max_vel>
+              </ode>
+            </contact>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <pose>-0.025 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05 0.02 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Black</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <joint name='bar_3_joint' type='revolute'>
+        <parent>link</parent>
+        <child>bar_3</child>
+        <pose>0 0 0 0 -0 0</pose>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+        </axis>
+      </joint>
       <link name='wheel_1'>
         <pose>0.5 0.55 -0.5 1.5708 -0 0</pose>
         <inertial>
@@ -235,7 +455,7 @@
         <gravity>1</gravity>
       </link>
       <joint name='wheel_1_joint' type='revolute'>
-        <parent>link</parent>
+        <parent>bar_2</parent>
         <child>wheel_1</child>
         <pose>0 0 0 0 -0 0</pose>
         <axis>
@@ -306,7 +526,7 @@
         <gravity>1</gravity>
       </link>
       <joint name='wheel_2_joint' type='revolute'>
-        <parent>link</parent>
+        <parent>bar_3</parent>
         <child>wheel_2</child>
         <pose>0 0 0 0 -0 0</pose>
         <axis>
@@ -606,7 +826,12 @@
         </axis>
       </joint>
       <plugin name='cart_test_plugin' filename='libCartDemoPlugin.so'>
-        
+        <steer>bar_2_joint</steer>
+        <steer_pid>10 0.1 0.5</steer_pid>
+        <steer_ilim>-10 10</steer_ilim>
+        <steer_pos>0.0</steer_pos>
+        <steer_vel>0</steer_vel>
+        <steer_eff>100.0</steer_eff>
         <right>wheel_3_joint</right>
         <right_pid>0.1 0.0 0.001</right_pid>
         <right_ilim>-.1 .1</right_ilim>
@@ -650,6 +875,24 @@
       </model>
       <model name='test_model'>
         <pose>-31.4512 3.49122 0.7 0 -0 0</pose>
+        <link name='bar_1'>
+          <pose>-31.0012 3.49122 0.2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='bar_2'>
+          <pose>-30.9512 3.99122 0.2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='bar_3'>
+          <pose>-30.9512 2.99122 0.2 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
         <link name='brake_pedal'>
           <pose>-31.3512 3.59122 0.6 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
