@@ -66,7 +66,7 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev, i_store;
+    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev, i_store, target_prev, u_prev, brake_u_prev;
     private: double ITerm; // Integration part
     //SubscriberPtr to 
   };
