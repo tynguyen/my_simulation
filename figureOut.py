@@ -1,4 +1,4 @@
-#Version 7.0 well with CartDemoPlugin from 16.0 awards.
+#Version 16.1
 import matplotlib.pyplot as plt
 import re
 tmp_t = []
@@ -14,6 +14,7 @@ ki = []
 gas_actual_signal = []
 gas_limited_signal = []
 brake_force = []
+gas_force = []
 with open('pidOut.csv','r+') as f:
 	for line in f:
 		temp = map(float, re.findall(r'\d+', line)) #find all number from line
@@ -29,15 +30,16 @@ with open('pidOut.csv','r+') as f:
 		ki.append(float(line.split('\t')[24]))
 		gas_actual_signal.append(float(line.split('\t')[26]))
 		gas_limited_signal.append(float(line.split('\t')[28]))
-		brake_force.append(float(line.split('\t')[30])/100)
+		brake_force.append(float(line.split('\t')[30])/50)
+		gas_force.append(float(line.split('\t')[4])/50)
 
 plt.figure(1)                # the first figure
 plt.subplot(2, 3, 1)				#Firt subplot in row
-plt.plot(tmp_t, vel_target,'b', tmp_t, vel_curr, 'r', tmp_t, z, 'k',tmp_t, brake_force,'y')
+plt.plot(tmp_t, vel_target,'b', tmp_t, vel_curr, 'r', tmp_t, z, 'k',tmp_t, brake_force,'y', gas_force, 'm')
 plt.title('Velocity Response, brake_force and Z with respect to time')   
 plt.xlabel('Time(0.1s interval)')
 plt.ylabel('Velocity(m/s), brake_force(N), Z(m)')
-plt.axis([0, 100, -5, 15])
+plt.axis([0, 100, -5, 30])
 plt.grid(True)
 
 #x, z, brake_force and velcurrent
