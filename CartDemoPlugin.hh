@@ -1,4 +1,4 @@
-/* Version 14.1 this version is good
+/*Version 16.1 modify brake, good figure for almost cases
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,8 @@ namespace gazebo
     public: virtual void Init();
     public: void pidCal(double &theta_e, double &v_e, double &u_e, double &a, double &b, double &b_g, 
     								double &kp, double &ki); //Calculate pid parameters
+    public: void brakePidCal(double &theta_e, double &u_e, double &kp, double &ki);
+    ///Calculate pi parameters for brake
     private: void OnUpdate();
 
     private: transport::NodePtr node;
@@ -66,7 +68,8 @@ namespace gazebo
     private: double wheelRadius;
 	  private: double gas_force, brake_force;
     private: common::Time prevUpdateTime;
-    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev, i_store, target_prev, u_prev, brake_u_prev;
+    private: double v_e, u_e, a, b, b_g, kp, ki, theta_prev, x_orig,v_prev, i_store, target_prev, u_prev, 
+    brake_i_store, brake_u_prev, brake_ki, brake_kp;
     private: double ITerm; // Integration part
     //SubscriberPtr to 
   };
