@@ -1,3 +1,4 @@
+<!--Version 17 map road2-v6-->
 <?xml version="2.0" ?>
 <sdf version='1.4'>
   <world name='cart_demo'>
@@ -41,7 +42,7 @@
           <geometry>
             <heightmap>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
-              <size>65 65 0.5</size>
+              <size>257 257 2</size>
               <pos>0 0 0</pos>
               <texture>
                 <size>10</size>
@@ -74,12 +75,12 @@
           <geometry>
             <heightmap>
               <texture>
-                <diffuse>file://media/materials/textures/road1.jpg</diffuse>
+                <diffuse>file://media/materials/textures/road2.jpg</diffuse>
                 <normal>file://media/materials/textures/flat_normal.png</normal>
-                <size>100</size>
+                <size>20</size>
               </texture>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
-              <size>65 65 0.5</size>
+              <size>257 257 2</size>
               <pos>0 0 0</pos>
               <blend>
                 <min_height>0</min_height>
@@ -111,12 +112,12 @@
     </spherical_coordinates>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-30.3511 2.7145 14.7665 2.2611e-18 1.3778 0.003374</pose>
+        <pose>-142.524 -4.24516 7.92403 0 0.2578 0.159373</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
     <model name='test_model'>
-      <pose>-31.4512 3.49122 0.7 0 -0 0</pose>
+      <pose>-127.53 -0.498527 0.7 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <inertia>
@@ -174,7 +175,6 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      
       <link name='wheel_1'>
         <pose>0.5 0.55 -0.5 1.5708 -0 0</pose>
         <inertial>
@@ -606,7 +606,6 @@
         </axis>
       </joint>
       <plugin name='cart_test_plugin' filename='libCartDemoPlugin.so'>
-        
         <right>wheel_3_joint</right>
         <right_pid>0.1 0.0 0.001</right_pid>
         <right_ilim>-.1 .1</right_ilim>
@@ -636,9 +635,9 @@
       <static>0</static>
     </model>
     <state world_name='cart_demo'>
-      <sim_time>1 745000000</sim_time>
-      <real_time>1 761481634</real_time>
-      <wall_time>1401277317 415401539</wall_time>
+      <sim_time>0 000000</sim_time>
+      <real_time>0 000000</real_time>
+      <wall_time>1402094040 74243288</wall_time>
       <model name='heightmap'>
         <pose>0 0 0 0 -0 0</pose>
         <link name='link'>
@@ -649,46 +648,46 @@
         </link>
       </model>
       <model name='test_model'>
-        <pose>-31.4512 3.49122 0.7 0 -0 0</pose>
+        <pose>-127.53 -0.498514 0.699997 1e-06 -2.6e-05 2.7e-05</pose>
         <link name='brake_pedal'>
-          <pose>-31.3512 3.59122 0.6 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-1 0 0 -4.34224e-19 -0.05 -0.05</acceleration>
-          <wrench>-0.1 0 0 0 -0 0</wrench>
+          <pose>-127.43 -0.398511 0.6 0 -2.5e-05 2.7e-05</pose>
+          <velocity>0.000 4e-06 -8e-06 1.1e-05 3e-06 3e-06</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='gas_pedal'>
-          <pose>-31.3512 3.39122 0.6 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-1 0 0 4.34224e-19 -0.05 0.05</acceleration>
-          <wrench>-0.1 0 0 0 -0 0</wrench>
+          <pose>-127.43 -0.598511 0.599999 3e-06 -2.5e-05 2.7e-05</pose>
+          <velocity>0.000 4e-06 -1.1e-05 1.1e-05 3e-06 3e-06</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='link'>
-          <pose>-31.4512 3.49122 0.7 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0.000333 0 0 0 -1.7e-05 0</acceleration>
-          <wrench>0.2 0 0 0 -0 0</wrench>
+          <pose>-127.53 -0.498514 0.699997 1e-06 -2.6e-05 2.7e-05</pose>
+          <velocity>0.000 3e-06 -9e-06 1.1e-05 3e-06 3e-06</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_1'>
-          <pose>-30.9512 4.04122 0.2 1.5708 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
+          <pose>-127.03 0.051481 0.200001 1.57075 0.001466 2.7e-05</pose>
+          <velocity>0.000 4e-06 -8e-06 0.000208 0.003632 3e-06</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_2'>
-          <pose>-30.9512 2.94122 0.2 1.5708 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
+          <pose>-127.03 -1.04848 0.2 1.57081 0.001364 4.8e-05</pose>
+          <velocity>0.000 -4e-06 -8e-06 -0.000193 0.003581 -1.7e-05</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_3'>
-          <pose>-31.9512 4.04122 0.2 1.5708 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
+          <pose>-128.03 0.051444 0.200001 1.57076 0.004301 4.6e-05</pose>
+          <velocity>0.000 5e-06 -7e-06 0.000179 0.003563 -4e-06</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='wheel_4'>
-          <pose>-31.9512 2.94122 0.2 1.5708 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
+          <pose>-128.03 -1.04852 0.2 1.57081 0.001553 2.4e-05</pose>
+          <velocity>0.000 -4e-06 -6e-06 -0.000165 0.003608 1.6e-05</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
