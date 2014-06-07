@@ -1,4 +1,4 @@
-#Version 16.1
+#Version 17
 import matplotlib.pyplot as plt
 import re
 tmp_t = []
@@ -39,7 +39,7 @@ plt.plot(tmp_t, vel_target,'b', tmp_t, vel_curr, 'r', tmp_t, z, 'k',tmp_t, brake
 plt.title('Velocity Response, brake_force and Z with respect to time')   
 plt.xlabel('Time(0.1s interval)')
 plt.ylabel('Velocity(m/s), brake_force(N), Z(m)')
-plt.axis([0, 100, -5, 30])
+plt.axis([0, 310, -5, 30])
 plt.grid(True)
 
 #x, z, brake_force and velcurrent
@@ -48,7 +48,7 @@ plt.plot(x, z, 'k', x, vel_curr,'r',x, vel_target, 'b')
 plt.title('z and vel_response with respect to x')   
 plt.xlabel('x)')
 plt.ylabel('z, vel_curr, vel_target')
-plt.axis([-32, 32, 0, 10])
+plt.axis([-160, 160, 0, 10])
 plt.grid(True)
 
 
@@ -58,7 +58,7 @@ plt.plot(x, z, 'k', x, kp, 'r', x, ki,'c')
 plt.title('kp, ki response')   
 plt.xlabel('x')
 plt.ylabel('z -red, kp -green, ki- yellow')
-plt.axis([-32, 32, -5, 5])
+plt.axis([-160, 160, -5, 5])
 plt.grid(True)
 
 #gas_control signal with respect to time
@@ -67,7 +67,7 @@ plt.plot(tmp_t, gas_limited_signal,'y*', tmp_t, gas_actual_signal, 'r')
 plt.title('Gas control signal respect to time')   
 plt.xlabel('Time(0.1s interval)')
 plt.ylabel('Gas_limited_signal, gas_actual_signal')
-plt.axis([0, 100, 0, 5])
+plt.axis([0, 310, 0, 5])
 plt.grid(True)
 
 
@@ -77,7 +77,7 @@ plt.plot(x, z, 'k', x, gas_limited_signal,'y*',x, gas_actual_signal, 'r')
 plt.title('gas_control signal with respect to x and z')   
 plt.xlabel('x')
 plt.ylabel('z, gas_limited_signal, gas_actual_signal')
-plt.axis([-32, 32, 0, 2])
+plt.axis([-160, 160, 0, 2])
 plt.grid(True)
 
 #x, y, z and theta_e
@@ -86,7 +86,7 @@ plt.plot(x, z, 'k', x, theta_e,'r', x, y, 'y')
 plt.title('y, z and theta_e with respect to x')   
 plt.xlabel('x')
 plt.ylabel('z, y, theta_e')
-plt.axis([-32, 32, -10, 10])
+plt.axis([-160, 160,-10, 10])
 plt.grid(True)
 plt.show()
 
