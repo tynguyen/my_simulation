@@ -1,4 +1,4 @@
-/*Version 16.1 modify brake, good figure for almost cases
+/*Version 16.2 remove steer
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,22 @@
 //#include "gazebo/util/system.hh"
 
 #define NUM_JOINTS 3
+
+///Car internal dynamic properties
+static const  double m=1000;                         // mass of car kg
+static const 	double Tm = 190;                       // gas torque constant, Nm
+static const 	double brake_Tm = 220;								 //brake torque constant
+static const  double brake_wm = 420;								//brake wm constant
+static const 	double g = 9.8;                        // gravitational constant
+static const 	double an= 12;
+static const	double gears[5] = {40, 25, 16, 12, 10};	// gear ratios
+static const 	int gear=4;             //gear
+static const 	double wm = 120;                       // peak torque rate, rad/sec
+static const 	double bbeta = 0.4;                    // torque coefficient
+static const 	double Cr = 0.01;                      // coefficient of rolling friction
+static const 	double rho = 1.3;                      // density of air, kg/m^3
+static const 	double Cd = 0.32;                      // drag coefficient
+static const 	double A = 2.4;                        // car area, m^2
 
 namespace gazebo
 {
