@@ -1,4 +1,4 @@
-/*Version 16.2 remove steer
+/*--Version 17.1 map road2-v6.1-->
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,13 +29,14 @@
 ///Car internal dynamic properties
 static const  double m=1000;                         // mass of car kg
 static const 	double Tm = 190;                       // gas torque constant, Nm
-static const 	double brake_Tm = 220;								 //brake torque constant
-static const  double brake_wm = 420;								//brake wm constant
+static const 	double brake_Tm = 1900;								 //brake torque constant
 static const 	double g = 9.8;                        // gravitational constant
-static const 	double an= 12;
+
+static const  double brake_an = 12;
 static const	double gears[5] = {40, 25, 16, 12, 10};	// gear ratios
-static const 	int gear=4;             //gear
-static const 	double wm = 120;                       // peak torque rate, rad/sec
+static const 	int gear=4;            								 //gear
+static const 	double an= gears[gear];
+static const 	double wm = 420;                       // peak torque rate, rad/sec
 static const 	double bbeta = 0.4;                    // torque coefficient
 static const 	double Cr = 0.01;                      // coefficient of rolling friction
 static const 	double rho = 1.3;                      // density of air, kg/m^3
@@ -56,7 +57,7 @@ namespace gazebo
     public: virtual void Init();
     public: void pidCal(double &theta_e, double &v_e, double &u_e, double &a, double &b, double &b_g, 
     								double &kp, double &ki); //Calculate pid parameters
-    public: void brakePidCal(double &theta_e, double &u_e, double &kp, double &ki);
+    public: void brakePidCal(double &theta_e, double &kp, double &ki);
     ///Calculate pi parameters for brake
     private: void OnUpdate();
 
