@@ -115,7 +115,7 @@ void CartDemoPlugin::brakePidCal(double &theta_e, double &kp, double &ki)
 	double b_g=g*cos(theta_e);
 
 //	cout<<"a: "<<a<<" b:"<<b<<" b_g:"<<b_g<<" u_e:"<<u_e<<endl;
-	double w0=0.4,z=0.8;
+	double w0=0.5,z=1;
 	kp=(2*z*w0-a)/c/10 ;
 	ki=w0*w0/c/10;
 	cout<<"brake_kp:"<<kp<<" brake_ki:"<<ki<<endl;
