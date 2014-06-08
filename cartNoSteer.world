@@ -1,4 +1,4 @@
-<!--Version 17 map road2-v6-->
+<!--Version 17.1 map road2-v6.1-->
 <?xml version="2.0" ?>
 <sdf version='1.4'>
   <world name='cart_demo'>
@@ -42,7 +42,7 @@
           <geometry>
             <heightmap>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
-              <size>257 257 2</size>
+              <size>257 257 0.8</size>
               <pos>0 0 0</pos>
               <texture>
                 <size>10</size>
@@ -80,7 +80,7 @@
                 <size>20</size>
               </texture>
               <uri>/usr/share/gazebo-2.2/media/materials/textures/road2.png</uri>
-              <size>257 257 2</size>
+              <size>257 257 0.8</size>
               <pos>0 0 0</pos>
               <blend>
                 <min_height>0</min_height>
