@@ -1,4 +1,4 @@
-/*--Version 17.1 map road2-v6.1-->
+/*--Version 17.3 map road2-v6.4 normal vehicle-->
 //This version replace the old car_model and change completely the way apply force to wheels. 
 /*
  * Copyright (C) 2012-2014 Open Source Robotics Foundation
@@ -18,7 +18,10 @@
 */
 
 
+#include "gazebo/common/common.hh"    //for gazebo 3.0, need to add extra part of path
 #include "gazebo/physics/physics.hh"
+#include "gazebo/transport/TransportTypes.hh"
+#include "gazebo/gazebo.hh"
 #include "gazebo/transport/transport.hh"
 #include "/home/tynguyen/my_plugin/CartDemoPlugin.hh"
 #include <fstream> //ofstream
@@ -51,8 +54,8 @@ CartDemoPlugin::CartDemoPlugin()
     this->a = 0;
     this->b = 0;
     this->b_g = 0;
-    this->kp = 0.5;
-    this->ki = 0.01;
+    this->kp = 0.08;
+    this->ki = 0.06;
     this->gas_force = 0;
     this->brake_force = 0;
 //    this->brake_kp = 0.02939;
@@ -68,19 +71,16 @@ CartDemoPlugin::CartDemoPlugin()
     this->target_prev = 0; //Vel-target-previous
     this->u_prev = 0;
     this->brake_u_prev = 0;
+    this->vel_set = 0;
   }
 }
 
 /////////////////////////////////////////////////
-void CartDemoPlugin::pidCal(double &theta_e, double &v_e, double &u_e, double &a, double &b, double &b_g, double &kp, double &ki)
+void CartDemoPlugin::pidCal(double &theta_e, double &v_e, double &a, double &b, double &b_g, double &kp, double &ki)
 {
-	//Get parameters for car
-	double vref=20;         //reference value for velocity m/s
-
 	//Compute the trottle u_e required to keep velocity ve
 	//at slope thetae, velocity ve, and gear
 
-	double an=gears[gear];
 	double A0=Tm*an*(1-bbeta*pow(an*v_e/wm-1,2.0));
 	double A1=m*g*Cr+rho*Cd*A*v_e*v_e/2+m*g*sin(theta_e);
 	u_e=A1/A0;
@@ -89,14 +89,16 @@ void CartDemoPlugin::pidCal(double &theta_e, double &v_e, double &u_e, double &a
 	double w=an*v_e;
 	double T=Tm*(1-bbeta*pow((w/wm-1),2.0));
 	double pT=-2*bbeta*Tm*(w/wm-1)/wm;
-	a=(pow(an,2)*u_e*pT-rho*Cd*A*v_e)/m;
+	a=(pow(an,2)*u_e*pT)/m;
 	b=A0/m;
 	b_g=g*cos(theta_e);
 
 //	cout<<"a: "<<a<<" b:"<<b<<" b_g:"<<b_g<<" u_e:"<<u_e<<endl;
 	double w0=0.5,z=1;
-	kp=(2*z*w0+a)/b ;
-	ki=w0*w0/b;
+//	kp=(2*z*w0+a)/b ;
+//	ki=w0*w0/b;
+	kp = 0.08;
+	ki = 0.12;
 	cout<<"u_e:"<<u_e<<" a:"<<a<<" b:"<<b<<" kp:"<<kp<<" ki:"<<ki<<endl;
 
 }
@@ -172,6 +174,11 @@ void CartDemoPlugin::Load(physics::ModelPtr _model,
   this->frontPower = _sdf->Get<double>("front_power");
   this->rearPower = _sdf->Get<double>("rear_power");
   
+  /// Add two more drive wheels
+   this->joints[4] = _model->GetJoint(
+    _sdf->GetElement("front_right")->Get<std::string>());
+   this->joints[3] = _model->GetJoint(
+    _sdf->GetElement("front_left")->Get<std::string>());
   
   
   this->updateConnection = event::Events::ConnectWorldUpdateBegin(
@@ -212,15 +219,15 @@ void CartDemoPlugin::OnUpdate()
     	vel_target = 0;
 
     else if (tmp_t<20)
-    	vel_target = 4.0;
+    	vel_target = 6.0;
     else if (tmp_t<30)
     	vel_target = 2.0;
 //    else if (tmp_t<50)
 //    	vel_target = 4.0;
     else if (tmp_t<50)
-    	vel_target = 5.0;
+    	vel_target = 3.0;
     else if (tmp_t<90)
-    	vel_target = 6.0;
+    	vel_target = 7.0;
 //    else if (tmp_t<95)
 //    	vel_target = 7.0;
 //    else if (tmp_t<100)
@@ -228,9 +235,9 @@ void CartDemoPlugin::OnUpdate()
 //    else if (tmp_t<105)
 //    	vel_target = 2.0;
     else if (tmp_t<120)
-    	vel_target = 10.0;
+    	vel_target = 5.0;
     else if (tmp_t<300)
-    	vel_target = 8.0;
+    	vel_target = 7.0;
     
     else vel_target = 0.0;
     
@@ -247,7 +254,7 @@ void CartDemoPlugin::OnUpdate()
 			x_orig = current_x;
     
     ///Array of terrain height 
-    double NET[5] = {1.6, 1, 0.8, 1.4, 1.2};
+    double NET[5] = {4.0, 3.0, 3.8 , 2.5, 3.0};
     
     ///Identify z with respect to x 
     int i_z = 0;
@@ -264,7 +271,7 @@ void CartDemoPlugin::OnUpdate()
 	  if(-128+ 64*i_z <= current_x && current_x < -112 +64*i_z)
 	  {
 	  	theta_e = 0;
-	  	v_e = 25;
+	  	v_e = 16;
 	  }
 
 	  ///Up slope 
@@ -277,21 +284,21 @@ void CartDemoPlugin::OnUpdate()
 	  ///Flat hight
 	  else if(-97 + 64*i_z <= current_x && current_x < -91 + 64*i_z)
 	  {
-	  	v_e = 25;
+	  	v_e = 16;
 	  	theta_e = 0;
 	  }
 
 	  ///Down slope
 	  else if(-91 + 64*i_z <= current_x && current_x< -71 + 64*i_z)
 	  {
-	  	v_e = 25;
+	  	v_e = 16;
 	  	theta_e = -atan(NET[i_z]/14); //Down
 	  }
 
 	  ///Flat end	  
 	  else
 	  {
-	   	v_e = 25;
+	   	v_e = 16;
 	  	theta_e = 0;
 	  }
 	  
@@ -300,14 +307,13 @@ void CartDemoPlugin::OnUpdate()
 //////////////////////////////////////////////////
 		//Nonlinear model
 		double vel_curr = this->joints[1]->GetVelocity(0);
-		double vel_cut = vel_curr > 16? 16: vel_curr;
+		double vel_curr_y = this->joints[1]->GetVelocity(2);
     double eff = 0;
 		double vel_err = vel_curr - vel_target;
 //		vel_err = vel_err > 10? 10:(vel_err< - 10? -10: vel_err);
-    double u_e = 0;
     if((theta_e - this->theta_prev) != 0)
     {
-    	CartDemoPlugin::pidCal(theta_e, v_e, u_e, this->a, this->b, this->b_g, this->kp, this->ki);
+    	CartDemoPlugin::pidCal(theta_e, v_e, this->a, this->b, this->b_g, this->kp, this->ki);
     	CartDemoPlugin::brakePidCal(theta_e, this->brake_kp, this->brake_ki);
     }
     gzdbg <<"Start with kp:"<<this->kp<<" ki:"<<this->ki<<endl;
@@ -315,13 +321,16 @@ void CartDemoPlugin::OnUpdate()
    
     
 		this->i_store = this->i_store + stepTime.Double()*vel_err;
+		///Set iterm max and min
+//		this->i_store = this->i_store > 0.1? 0.1:
+//					(this->i_store < -0.1? -0.1:this->i_store);
+		
 		double uu = -this->kp*vel_err - this->ki*this->i_store;		
 		double u= uu > 1? 1: (uu < 0? 0: uu);
 		double dI = -this->ki*vel_err + 0.5*(u-uu);
-    this->i_store = this->i_store - dI*stepTime.Double();
-		double omega = an*vel_cut;
-		double torque = u * Tm * ( 1 - bbeta * pow((omega/wm - 1),2) );
-		this->gas_force = an * torque;
+//    this->i_store = this->i_store - dI*stepTime.Double();
+		double torque = uu * Tm ;
+		this->gas_force = 2*torque;
 		this->gas_force = this->gas_force < 0? 0:this->gas_force;
 		
 		
@@ -344,7 +353,7 @@ void CartDemoPlugin::OnUpdate()
 		double brake_u = brake_uu > 1? 1: (brake_uu < 0? 0: brake_uu);
 		double k = m*g*2/10/(0.5*brake_Tm*brake_an);
 		double alpha = (m*(5-g*sin(theta_e))/(brake_Tm*brake_an) - k)/100;
-		double brake_torque = brake_u *brake_Tm*(vel_cut*vel_cut*alpha + k);
+		double brake_torque = brake_u *brake_Tm*(vel_curr*vel_curr*alpha + k);
 		this->brake_force = brake_an*brake_torque;
     this->brake_force = this->brake_force > 0 ? this->brake_force: 0 ;
 //////////////////////////////////////////////////
@@ -354,22 +363,9 @@ void CartDemoPlugin::OnUpdate()
 
 		if(theta_e > 0)   //Up
 			{ 
-			  // Brake only used when zero gas but not reach target
-    		if(vel_target < this->target_prev && vel_err > 0.02 && u == 0 && theta_e<0.04)  
-    		  {
-    				this->gas_force = 0;
-    				this->i_store = 0;
-    			}
-    		else if(vel_target >= this->target_prev && vel_err > 0.05 && u == 0 &&theta_e<0.04)  
-    		  {
-    				this->gas_force = 0;
-    				this->i_store = 0;
-    			}
-    		else
-    			{
+
     				this->brake_force = 0;
     				this->brake_i_store = 0;
-    			}
 			}
 
 		else if(theta_e < 0)  //Down
@@ -388,27 +384,14 @@ void CartDemoPlugin::OnUpdate()
 				else
 					{
     				this->gas_force = 0;
-    				this->i_store = 0;
     			}
 			}
 		else
 		 	{
-		 		if(vel_target < this->target_prev && vel_err > 0.05)  
-    		  {
-    				this->gas_force = 0;
-    				this->i_store = 0;
-    			}
-    		if(vel_target >= this->target_prev && vel_err > 0.05&& u == 0)  
-    		  {
-    				this->gas_force = 0;
-    				this->i_store = 0;
-    			}
-    		else
-    			{
-    				this->brake_force = 0;
+		 		    				this->brake_force = 0;
     				this->brake_i_store = 0;
-    			}
-		 	}
+    		
+    				 	}
 		if (vel_curr < 0.001)
 			{
 			this->brake_force = 0;
@@ -426,7 +409,7 @@ void CartDemoPlugin::OnUpdate()
       this->gas_force = 0;
       this->brake_force = 0;
     }  
-		eff = (this->gas_force  )/6 - this->brake_force/6; 
+		eff = (this->gas_force  ) - this->brake_force; 
 
 		double acc = (vel_curr - v_prev)/0.001;
 		v_prev = vel_curr;
@@ -439,16 +422,22 @@ void CartDemoPlugin::OnUpdate()
     gzdbg <<"brake_kp:"<<brake_kp<<"\tbrake_ki:\t"<<brake_ki<<endl;
     gzdbg <<"x:"<<current_x<<"\ty:\t"<<current_y<<"\tz:\t"<<current_z<<"\ti_z\t"<<i_z<<"\tTheta_e:\t"<<theta_e<<endl;
     gzdbg	<<"NOW:\t"<<tmp_t
-  					<<"\tDistance_by_angle\t"<<this->joints[1]->GetAngle(0).Radian()*0.2*5
+  					<<"\tDistance_by_angle\t"<<this->joints[1]->GetAngle(0).Radian()*radius*5
   					<<"\tDelta x:\t"<<current_x - this->x_orig
-  					<<"\tvel_current\t"<<vel_curr<<"\n";
+  					<<"\tvel_current\t"<<vel_curr<<"\tvel_curr_y:\t"<<vel_curr_y<<"\n";
     
-
+    
+    if(abs(vel_err) > 0.5)
+    	vel_set = vel_set - vel_err;
     ///Set torque to each wheel
-   	for (int i = 1; i < NUM_JOINTS; i++)
+   	for (int i = 4; i >0; i--)
     {
-    this->joints[i]->SetForce(0, eff );
+//    this->joints[i]->SetForce(0, eff );
+	    this->joints[i]->SetMaxForce(0,360);
+			this->joints[i]->SetVelocity(0,vel_set);
+		
     }
+     
     gzdbg << "\n";
     
     
@@ -476,6 +465,8 @@ void CartDemoPlugin::OnUpdate()
 					<<"\tGas_actual_sig\t"<<uu
 					<<"\tGas_limited_sig\t"<<u
 					<<"\tBrake_force\t"<<this->brake_force
+					<<"\tThis->i_store\t"<<this->i_store
+					<<"\tvel_errorr*stepTime\t"<<vel_err*stepTime.Double()
 					<<"\n";
 // 	}
 }
